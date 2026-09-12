@@ -1,0 +1,62 @@
+[
+  {
+    "id": "michael-jackson",
+    "file": "32 Michael Jackson 1991 by Arun.jpg",
+    "licence": "CC BY-SA 4.0",
+    "artist": "Anurekhac7"
+  },
+  {
+    "id": "charlie-chaplin",
+    "file": "Charlie Chaplin.jpg",
+    "licence": "Public domain",
+    "artist": "P.D Jankens"
+  },
+  {
+    "id": "cristiano-ronaldo",
+    "file": "Cristiano Ronaldo 2018.jpg",
+    "licence": "CC BY-SA 3.0",
+    "artist": "Анна Нэсси"
+  },
+  {
+    "id": "albert-einstein",
+    "file": "Einstein 1921 by F Schmutzer - restoration.jpg",
+    "licence": "Public domain",
+    "artist": "Ferdinand Schmutzer / Adam Cuerden"
+  },
+  {
+    "id": "leonardo-da-vinci",
+    "file": "Leonardo self.jpg",
+    "licence": "Public domain",
+    "artist": "Leonardo da Vinci"
+  },
+  {
+    "id": "lionel-messi",
+    "file": "Lionel Messi 20180626.jpg",
+    "licence": "CC BY-SA 3.0",
+    "artist": "Кирилл Венедиктов"
+  },
+  {
+    "id": "marilyn-monroe",
+    "file": "Marilyn Monroe in Gentlemen Prefer Blondes trailer.jpg",
+    "licence": "Public domain",
+    "artist": "Self made screen capture from a public domain film trailer Licencing i"
+  },
+  {
+    "id": "muhammad-ali",
+    "file": "Muhammad Ali NYWTS.jpg",
+    "licence": "Public domain",
+    "artist": "Ira Rosenberg"
+  },
+  {
+    "id": "nikola-tesla",
+    "file": "N.Tesla.JPG",
+    "licence": "Public domain",
+    "artist": "Unknown authorUnknown author"
+  },
+  {
+    "id": "steve-jobs",
+    "file": "Steve Jobs Headshot 2010-CROP.jpg",
+    "licence": "CC BY-SA 3.0",
+    "artist": "Matthew Yohe (talk)"
+  }
+]

@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   COSMOS — design foundation
+   Black ground, restrained editorial typography, controlled glow.
+   ============================================================ */
+
+:root {
+  --void: #000000;
+  --ink: #04050a;
+  --bone: #eaeaf2;
+  --smoke: rgba(234, 234, 242, 0.6);
+  --ash: rgba(234, 234, 242, 0.34);
+  --line: rgba(234, 234, 242, 0.14);
+  --violet: #7c5cff;
+  --cyan: #5bc8ff;
+  --ember: #ffb877;
+  --ease-cine: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    background: var(--void);
+    color: var(--bone);
+    /* No overflow property on the root. `overflow-x: clip` here stops the
+       viewport from being a scroll container at all, which silently kills wheel
+       scrolling — and this whole site is driven by the scrollbar. Horizontal
+       overflow is contained by the sections that can produce it instead. */
+  }
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    margin: 0;
+    overscroll-behavior-y: none;
+  }
+  ::selection {
+    background: rgba(124, 92, 255, 0.35);
+    color: #fff;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-weight: 400;
+  }
+  /* Slim, near-invisible scrollbar — the journey supplies its own progress rail */
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+  html {
+    scrollbar-width: none;
+  }
+  :focus-visible {
+    outline: 1px solid var(--cyan);
+    outline-offset: 4px;
+  }
+}
+
+@layer components {
+  /* --- type scales ------------------------------------------------ */
+  .t-display {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    font-size: clamp(3rem, 11vw, 11rem);
+  }
+  .t-display-sm {
+    font-family: 'Instrument Serif', Georgia, serif;
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+    font-size: clamp(2rem, 5.2vw, 4.6rem);
+  }
+  .t-eyebrow {
+    font-size: clamp(0.56rem, 0.72vw, 0.7rem);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--ash);
+    font-weight: 400;
+  }
+  .t-label {
+    font-size: 0.64rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--smoke);
+  }
+  .t-body {
+    font-size: clamp(0.92rem, 1.05vw, 1.06rem);
+    line-height: 1.68;
+    color: var(--smoke);
+    font-weight: 300;
+  }
+  .t-lead {
+    font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+    line-height: 1.55;
+    color: rgba(234, 234, 242, 0.8);
+    font-weight: 300;
+  }
+
+  /* --- hairline framing ------------------------------------------ */
+  .hair-t {
+    border-top: 1px solid var(--line);
+  }
+  .hair-l {
+    border-left: 1px solid var(--line);
+  }
+  .hair-b {
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* --- the one button style, used everywhere --------------------- */
+  .btn-cosmos {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.95rem 1.9rem;
+    border: 1px solid rgba(234, 234, 242, 0.22);
+    background: transparent;
+    color: var(--bone);
+    font-size: 0.64rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.6s var(--ease-cine), color 0.6s var(--ease-cine);
+  }
+  .btn-cosmos::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgba(124, 92, 255, 0.9), rgba(91, 200, 255, 0.75));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.75s var(--ease-cine);
+    z-index: 0;
+  }
+  .btn-cosmos > * {
+    position: relative;
+    z-index: 1;
+  }
+  .btn-cosmos:hover {
+    border-color: transparent;
+    color: #05060a;
+  }
+  .btn-cosmos:hover::before {
+    transform: scaleX(1);
+  }
+  .btn-ghost {
+    border-color: rgba(234, 234, 242, 0.16);
+  }
+  .btn-ghost:hover {
+    color: var(--bone);
+    border-color: rgba(234, 234, 242, 0.5);
+  }
+  .btn-ghost:hover::before {
+    transform: scaleX(0);
+  }
+
+  /* Hero type sits over whatever the camera happens to be looking at, so it
+     carries its own darkening field rather than relying on the scene. */
+  .scrim {
+    position: relative;
+  }
+  .scrim::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 150%;
+    height: 260%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.55) 38%,
+      rgba(0, 0, 0, 0) 72%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /**
+   * On a narrow screen a text panel and the object it describes share the same
+   * space, so the panel carries a soft dark pad behind it. Wide screens put
+   * them side by side and need nothing.
+   */
+  .panel-pad {
+    position: relative;
+    isolation: isolate;
+  }
+  .panel-pad::before {
+    content: '';
+    position: absolute;
+    inset: -1.4rem -1.6rem;
+    background: rgba(2, 3, 8, 0.8);
+    filter: blur(16px);
+    border-radius: 2rem;
+    z-index: -1;
+  }
+  @media (min-width: 768px) {
+    .panel-pad::before {
+      display: none;
+    }
+  }
+
+  /* --- glow primitives ------------------------------------------- */
+  .glow-soft {
+    text-shadow: 0 0 60px rgba(140, 130, 255, 0.35), 0 0 140px rgba(90, 160, 255, 0.18);
+  }
+  .vignette::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%);
+  }
+  .grain::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grainshift 0.9s steps(3) infinite;
+  }
+  @keyframes grainshift {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-2%, 1%); }
+    66% { transform: translate(1%, -2%); }
+    100% { transform: translate(0, 0); }
+  }
+
+  .rule-v {
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(234, 234, 242, 0.35), transparent);
+  }
+}
+
+@layer utilities {
+  .stack {
+    position: absolute;
+    inset: 0;
+  }
+  .no-cursor {
+    cursor: none;
+  }
+  .shim {
+    mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  }
+  .edge-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  }
+}
+
+/* The custom cursor replaces the native one on precise pointers only */
+@media (hover: hover) and (pointer: fine) {
+  html.cursor-custom,
+  html.cursor-custom * {
+    cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain::before {
+    animation: none;
+  }
+}
