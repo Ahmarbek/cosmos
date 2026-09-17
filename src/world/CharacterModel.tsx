@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { useFrame } from '@react-three/fiber';
 
@@ -15,18 +17,40 @@ import { useFrame } from '@react-three/fiber';
  *
  * The model is normalised on load — recentred on its feet and scaled to the
  * character's height — so assets from different sources stand correctly on the
- * plinth without anyone editing them first.
+ * plinth without anyone editing them first. If it carries an idle clip that
+ * clip is played, because a figure with a pulse reads as present in a way a
+ * frozen bind pose never does.
  */
 
-const cache = new Map<string, Promise<THREE.Object3D | null>>();
+/**
+ * One loader for the whole hall, with both mesh compressions wired up.
+ *
+ * A likeness at a useful polygon count is several megabytes raw, and which of
+ * the two ways of getting it under budget was used — Draco or meshopt — is
+ * decided by whoever exported the file, not by us. Supporting neither means
+ * the drop-in promise quietly fails on a good half of the assets people
+ * actually have. The Draco decoder is served from /draco rather than a CDN so
+ * the hall still works offline, and it is fetched only if a Draco-compressed
+ * file turns up.
+ */
+const loader = new GLTFLoader()
+  .setDRACOLoader(new DRACOLoader().setDecoderPath('/draco/'))
+  .setMeshoptDecoder(MeshoptDecoder);
 
-function load(id: string): Promise<THREE.Object3D | null> {
+interface Asset {
+  scene: THREE.Object3D;
+  clips: THREE.AnimationClip[];
+}
+
+const cache = new Map<string, Promise<Asset | null>>();
+
+function load(id: string): Promise<Asset | null> {
   const hit = cache.get(id);
   if (hit) return hit;
-  const p = new Promise<THREE.Object3D | null>((resolve) => {
-    new GLTFLoader().load(
+  const p = new Promise<Asset | null>((resolve) => {
+    loader.load(
       `/models/${id}.glb`,
-      (gltf) => resolve(gltf.scene),
+      (gltf) => resolve({ scene: gltf.scene, clips: gltf.animations ?? [] }),
       undefined,
       () => resolve(null)
     );
@@ -35,29 +59,60 @@ function load(id: string): Promise<THREE.Object3D | null> {
   return p;
 }
 
+/**
+ * The clip to stand there doing, out of whatever the file happens to ship.
+ *
+ * An idle is what a figure on a plinth wants, and its name is the only thing
+ * that distinguishes one, so names are read first; the first clip is the
+ * fallback for the files that ship a single unhelpfully named animation.
+ */
+function idleClip(clips: THREE.AnimationClip[]): THREE.AnimationClip | null {
+  if (!clips.length) return null;
+  return clips.find((c) => /idle|breath|stand|pose/i.test(c.name)) ?? clips[0];
+}
+
+/**
+ * The same clip with the root's translation dropped.
+ *
+ * The plinth is 1.2 m across, and a model may well arrive with a walk as its
+ * only animation: played as authored it carries the figure off the front
+ * within a couple of seconds and then keeps going. Removing the position track
+ * on the root bone leaves the motion of every limb intact and pins the figure
+ * where it was put, which is what an exhibit needs from any clip at all.
+ */
+function inPlace(clip: THREE.AnimationClip, root: string | null): THREE.AnimationClip {
+  if (!root) return clip;
+  const c = clip.clone();
+  c.tracks = c.tracks.filter((t) => t.name !== `${root}.position`);
+  return c;
+}
+
 interface Props {
   id: string;
   /** target height in world units; the model is scaled to match */
   height: number;
+  /** play the model's idle clip; off on the low tier, where skinning costs most */
+  animate?: boolean;
   children: React.ReactNode;
 }
 
-export default function CharacterModel({ id, height, children }: Props) {
+export default function CharacterModel({ id, height, animate = true, children }: Props) {
   const [model, setModel] = useState<THREE.Object3D | null>(null);
   const holder = useRef<THREE.Group>(null);
+  const mixer = useRef<THREE.AnimationMixer | null>(null);
   const box = useMemo(() => new THREE.Box3(), []);
   const size = useMemo(() => new THREE.Vector3(), []);
   const centre = useMemo(() => new THREE.Vector3(), []);
 
   useEffect(() => {
     let alive = true;
-    load(id).then((scene) => {
-      if (!alive || !scene) return;
+    load(id).then((asset) => {
+      if (!alive || !asset) return;
       // SkeletonUtils, not Object3D.clone: a plain deep clone of a rigged
       // model leaves its SkinnedMeshes pointing at the original skeleton, and
       // the copy renders collapsed or not at all. Most downloadable character
       // models are rigged, so this is the common case, not the edge case.
-      const obj = cloneSkinned(scene);
+      const obj = cloneSkinned(asset.scene);
       // Normalise: measure, scale to the target height, sit it on y = 0.
       //
       // Box3.setFromObject measures a SkinnedMesh from its undeformed geometry,
@@ -68,12 +123,16 @@ export default function CharacterModel({ id, height, children }: Props) {
       obj.updateMatrixWorld(true);
       box.setFromObject(obj);
       const bone = new THREE.Vector3();
+      // The topmost bone of the first skeleton: the one a root-motion track
+      // drives, and so the one to pin down before any clip is played.
+      let root: string | null = null;
       obj.traverse((o) => {
         const sk = o as THREE.SkinnedMesh;
         if (!sk.isSkinnedMesh || !sk.skeleton) return;
         for (const j of sk.skeleton.bones) {
           j.getWorldPosition(bone);
           box.expandByPoint(bone);
+          if (root === null && !(j.parent as THREE.Bone | null)?.isBone) root = j.name;
         }
       });
       box.getSize(size);
@@ -126,16 +185,32 @@ export default function CharacterModel({ id, height, children }: Props) {
             'or the world will not hold frame rate.'
         );
       }
+
+      // The clips hang off the glTF, not off the scene graph, so a clone that
+      // copies only the scene — which is every clone made here — arrives
+      // frozen in its bind pose unless a mixer is attached to it by hand.
+      const clip = animate ? idleClip(asset.clips) : null;
+      if (clip) {
+        const m = new THREE.AnimationMixer(obj);
+        m.clipAction(inPlace(clip, root)).play();
+        // Ten figures started together would breathe in lockstep, which reads
+        // as one machine rather than as ten people; an offset breaks that up.
+        m.setTime(Math.random() * clip.duration);
+        mixer.current = m;
+      }
       setModel(obj);
     });
     return () => {
       alive = false;
+      mixer.current?.stopAllAction();
+      mixer.current = null;
     };
-  }, [id, height, box, size, centre]);
+  }, [id, height, animate, box, size, centre]);
 
-  useFrame(() => {
-    // nothing to drive yet — the figure's float and facing are handled by the
-    // parent group, so a supplied model inherits them unchanged
+  useFrame((_, dt) => {
+    // The float and the facing are the parent group's, and a supplied model
+    // inherits them unchanged. Its own clip is driven from here.
+    mixer.current?.update(dt);
   });
 
   if (!model) return <>{children}</>;
