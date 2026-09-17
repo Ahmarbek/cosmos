@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import Sun from './Sun';
 import Planet from './Planet';
-import Earth3D from './Earth3D';
+import Earth3D, { earthSegments } from './Earth3D';
 import OrbitRings from './OrbitRings';
 import { PLANETS } from '../data/planets';
 import { ORBIT_SPEED, SS_POS } from './constants';
@@ -86,7 +86,7 @@ export default function SolarSystem({ quality }: { quality: Quality }) {
         p.id === 'earth' ? (
           <Earth3D
             key={p.id}
-            segments={Math.max(seg, 48)}
+            segments={earthSegments(quality)}
             selected={selected === 'earth'}
             onSelect={handleSelect}
             onHover={handleHover}

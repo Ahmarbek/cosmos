@@ -297,12 +297,39 @@ function buildClouds(): HTMLCanvasElement {
   return c;
 }
 
+/**
+ * Anisotropic filtering, which matters more here than anywhere else in the
+ * project.
+ *
+ * An equirectangular map on a sphere is the worst case for a trilinear
+ * sampler: near the limb a screen pixel covers a long, thin strip of texels,
+ * so the sampler picks a mip level coarse enough to cover the strip's *length*
+ * and throws away everything across its width. The whole rim of the planet
+ * goes soft — which is exactly the part of the disc the eye reads as detail.
+ * Four samples was leaving most of that on the table on hardware that offers
+ * sixteen, and it costs nothing on any GPU that can run this scene at all.
+ */
+let maxAnisotropy = 4;
+
+/** Raise the filtering quality to whatever this renderer supports. */
+export function setEarthAnisotropy(n: number) {
+  const v = Math.max(1, Math.floor(n));
+  if (v === maxAnisotropy) return;
+  maxAnisotropy = v;
+  // the maps may already be built and bound, so bring them along
+  if (!built) return;
+  for (const t of [built.day, built.night, built.clouds, built.mask]) {
+    t.anisotropy = v;
+    t.needsUpdate = true;
+  }
+}
+
 function toTexture(c: HTMLCanvasElement, srgb: boolean) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.wrapS = THREE.RepeatWrapping;
   t.wrapT = THREE.ClampToEdgeWrapping;
-  t.anisotropy = 4;
+  t.anisotropy = maxAnisotropy;
   t.needsUpdate = true;
   return t;
 }
@@ -385,51 +412,66 @@ function maskFromDayImage(img: TexImageSource & { width: number; height: number 
  * and the water mask is re-derived from the photograph so the ocean specular
  * lands on the actual ocean. If a file is missing the generated version simply
  * stays — the site never depends on them.
+ *
+ * The swap happens *inside* the existing textures rather than by handing back
+ * new ones, and that is the whole point of how this is written. Materials copy
+ * a texture into a uniform when they are built, and nothing tells them to look
+ * again; replacing `set.day` therefore only reaches materials that happen not
+ * to exist yet. Earth's material is built the moment the canvas mounts and
+ * this runs a second and a half later behind a loading screen, so the planet
+ * that was actually being shown was the coarse generated plate — the real maps
+ * loaded, were assigned, and were never looked at, while the originals they
+ * displaced were disposed out from under the material still pointing at them.
+ *
+ * Keeping the texture objects and changing what is inside them makes the
+ * ordering irrelevant: every material already holding one picks up the imagery
+ * on the next frame, whether it was built before this ran or after.
  */
 export async function tryLoadRealTextures(set: EarthTextureSet): Promise<boolean> {
-  const loader = new THREE.TextureLoader();
-  const attempt = (url: string, srgb: boolean) =>
-    new Promise<THREE.Texture | null>((resolve) => {
-      loader.load(
-        url,
-        (t) => {
-          t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-          t.wrapS = THREE.RepeatWrapping;
-          t.wrapT = THREE.ClampToEdgeWrapping;
-          t.anisotropy = 4;
-          resolve(t);
-        },
-        undefined,
-        () => resolve(null)
-      );
+  const loader = new THREE.ImageLoader();
+  const attempt = (url: string) =>
+    new Promise<HTMLImageElement | null>((resolve) => {
+      loader.load(url, resolve, undefined, () => resolve(null));
     });
 
   const [day, night, clouds] = await Promise.all([
-    attempt('/textures/earth_day.jpg', true),
-    attempt('/textures/earth_night.jpg', true),
-    attempt('/textures/earth_clouds.jpg', false),
+    attempt('/textures/earth_day.jpg'),
+    attempt('/textures/earth_night.jpg'),
+    attempt('/textures/earth_clouds.jpg'),
   ]);
 
+  /**
+   * Re-point a texture at a new image without changing the object identity.
+   *
+   * The dispose() is load-bearing and not obvious. A renderer allocates a
+   * texture's GPU storage immutably, with texStorage2D, and only on the first
+   * upload — every later version bump goes down a texSubImage2D path into
+   * storage that is still the size it was originally given. The generated
+   * plate is 1024x512 and these photographs are 2048x1024 and larger, so the
+   * new imagery simply will not fit the allocation the plate created: the
+   * upload fails, quietly, and the old plate stays on screen while every
+   * property on the CPU side insists the map has been replaced.
+   *
+   * Disposing clears the cached allocation, so the next frame allocates again
+   * at the photograph's real dimensions. It frees the GPU copy only — the
+   * texture object, and every material uniform pointing at it, survives.
+   */
+  const swap = (t: THREE.Texture, image: TexImageSource) => {
+    t.dispose();
+    t.image = image;
+    t.needsUpdate = true;
+  };
+
   if (day) {
-    set.day.dispose();
-    set.day = day;
+    swap(set.day, day);
     try {
-      const img = day.image as TexImageSource & { width: number; height: number };
-      if (img?.width) {
-        set.mask.dispose();
-        set.mask = toTexture(maskFromDayImage(img), false);
-      }
+      if (day.width) swap(set.mask, maskFromDayImage(day));
     } catch {
       /* keep the generated mask if the image cannot be read back */
     }
   }
-  if (night) {
-    set.night.dispose();
-    set.night = night;
-  }
-  if (clouds) {
-    set.clouds.dispose();
-    set.clouds = clouds;
-  }
+  if (night) swap(set.night, night);
+  if (clouds) swap(set.clouds, clouds);
+
   return !!day;
 }

@@ -48,6 +48,11 @@ const GALAXIES: GalaxyDef[] = [
  * All of it is procedural and drawn on single quads. Nebulae billboard toward
  * the camera; galaxies keep a fixed attitude, because a galaxy that turns to
  * face you reads as a sprite rather than an object in space.
+ *
+ * Each one is a bounded object, so the quads are left to ordinary frustum
+ * culling — billboarding rotates a plane about its own centre and cannot move
+ * it outside its bounding sphere, so the test stays correct — and the group as
+ * a whole is dropped from the scene outside the chapters it belongs to.
  */
 export default function Nebulae() {
   const group = useRef<THREE.Group>(null);
@@ -106,6 +111,15 @@ export default function Nebulae() {
 
     const g = group.current;
     if (!g) return;
+
+    // These are the largest quads in the scene — up to sixteen hundred units
+    // across, sitting directly on the flight path — and every pixel of them
+    // runs a five-octave fbm twice over. Fading them to zero opacity does not
+    // save any of that: the fragment shader still runs for every pixel they
+    // cover. Outside their chapter they have to leave the draw list entirely.
+    g.visible = fade > 0.002;
+    if (!g.visible) return;
+
     g.children.forEach((child, i) => {
       if (i < NEBULAE.length) {
         child.quaternion.copy(camera.quaternion);
@@ -123,7 +137,7 @@ export default function Nebulae() {
   return (
     <group ref={group} renderOrder={-9}>
       {NEBULAE.map((n, i) => (
-        <mesh key={`n${i}`} position={n.pos} material={nebulaMats[i]} frustumCulled={false}>
+        <mesh key={`n${i}`} position={n.pos} material={nebulaMats[i]}>
           <planeGeometry args={[n.size, n.size]} />
         </mesh>
       ))}
@@ -133,7 +147,6 @@ export default function Nebulae() {
           position={g.pos}
           rotation={g.tilt}
           material={galaxyMats[i]}
-          frustumCulled={false}
         >
           <planeGeometry args={[g.size, g.size]} />
         </mesh>

@@ -48,6 +48,19 @@ export const blackHoleFrag = /* glsl */ `
   uniform float uDiskBright;
   uniform float uWarpBoost;    // scroll-velocity reaction
 
+  /**
+   * How far the integration is allowed to run.
+   *
+   * STEPS is the hard ceiling the loop is compiled with; uSteps is the budget
+   * actually spent this frame. The two are separate because the budget depends
+   * on how much the pass is being downscaled, and that is not known at compile
+   * time — the pixel ratio moves at runtime as the frame monitor trims it. A
+   * ceiling with a dynamic break lets the march lengthen exactly when the lower
+   * sampling density has paid for it, and fall back to the plain budget when it
+   * has not, without recompiling anything mid-flight.
+   */
+  uniform float uSteps;
+
   #ifndef STEPS
   #define STEPS 128
   #endif
@@ -248,6 +261,8 @@ export const blackHoleFrag = /* glsl */ `
     float escapeR = max(startR * 1.12, 30.0);
 
     for (int i = 0; i < STEPS; i++) {
+      if (float(i) >= uSteps) break;
+
       float r2 = dot(p, p);
       float r = sqrt(r2);
 
@@ -317,6 +332,41 @@ export const blackHoleFrag = /* glsl */ `
     col = pow(col, vec3(0.86));
 
     gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0) * uOpacity);
+    #include <colorspace_fragment>
+  }
+`;
+
+/**
+ * Composite pass.
+ *
+ * The integrator above is the most expensive thing in the project by a wide
+ * margin — a per-pixel geodesic march — so it is not drawn straight to the
+ * canvas. It renders once into an offscreen target sized in CSS pixels rather
+ * than device pixels, and this pass lifts that result onto the screen. On a
+ * high-density display that is a three- to four-fold cut in the work, spent
+ * instead on a longer integration: a smoother disk and a truer photon ring.
+ *
+ * The offscreen target holds linear, unblended colour with the chapter fade
+ * already in its alpha, so the composite is a straight texture fetch and the
+ * blend with the real starfield behind it happens exactly as it did before.
+ */
+export const compositeVert = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = position.xy * 0.5 + 0.5;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
+
+export const compositeFrag = /* glsl */ `
+  precision highp float;
+  varying vec2 vUv;
+  uniform sampler2D uMap;
+
+  void main() {
+    vec4 c = texture2D(uMap, vUv);
+    if (c.a < 0.002) discard;
+    gl_FragColor = c;
     #include <colorspace_fragment>
   }
 `;

@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useT } from '../../i18n';
+import { UI } from '../../i18n/ui';
 
 /**
  * Line diagrams for the black-hole chapter.
@@ -28,6 +30,7 @@ const Caption = ({ x, y, children }: { x: number; y: number; children: string })
 );
 
 export default function Diagram({ kind }: { kind: string }) {
+  const t = useT();
   return (
     <svg viewBox="0 0 200 120" className="w-full max-w-[250px] h-auto" aria-hidden>
       <motion.g initial="hidden" animate="show">
@@ -37,7 +40,7 @@ export default function Diagram({ kind }: { kind: string }) {
             <motion.circle cx="100" cy="60" r="33" fill="none" stroke={accent} strokeWidth="0.7" strokeDasharray="2 3" variants={draw} custom={1} />
             <motion.path d="M18 60 H70" stroke={stroke} strokeWidth="0.6" fill="none" variants={draw} custom={2} />
             <motion.path d="M70 60 q10 0 16 -7" stroke={accent} strokeWidth="0.8" fill="none" variants={draw} custom={3} />
-            <Caption x={100} y={104}>EVENT HORIZON · PHOTON SPHERE</Caption>
+            <Caption x={100} y={104}>{t(UI.figHorizon)}</Caption>
           </>
         )}
         {kind === 'disk' && (
@@ -46,7 +49,7 @@ export default function Diagram({ kind }: { kind: string }) {
             <motion.ellipse cx="100" cy="60" rx="44" ry="10" fill="none" stroke={accent} strokeWidth="0.7" variants={draw} custom={1} />
             <motion.circle cx="100" cy="60" r="13" fill="#000" stroke={stroke} strokeWidth="0.6" variants={draw} custom={2} />
             <motion.path d="M30 60 q70 -46 140 0" stroke="#FFB877" strokeWidth="0.7" fill="none" variants={draw} custom={3} />
-            <Caption x={100} y={104}>DISK · LENSED FAR SIDE</Caption>
+            <Caption x={100} y={104}>{t(UI.figDisk)}</Caption>
           </>
         )}
         {kind === 'dilation' && (
@@ -58,7 +61,7 @@ export default function Diagram({ kind }: { kind: string }) {
             <motion.path d="M150 60 V48" stroke={stroke} strokeWidth="0.8" variants={draw} custom={2} />
             <motion.path d="M150 60 L156 56" stroke={accent} strokeWidth="0.8" variants={draw} custom={3} />
             <motion.path d="M70 60 H126" stroke={stroke} strokeWidth="0.4" strokeDasharray="1 4" variants={draw} custom={3} />
-            <Caption x={100} y={104}>FAR CLOCK · NEAR CLOCK</Caption>
+            <Caption x={100} y={104}>{t(UI.figDilation)}</Caption>
           </>
         )}
         {kind === 'singularity' && (
@@ -75,7 +78,7 @@ export default function Diagram({ kind }: { kind: string }) {
               />
             ))}
             <motion.circle cx="100" cy="74" r="1.6" fill="#fff" variants={draw} custom={5} />
-            <Caption x={100} y={106}>CURVATURE WITHOUT LIMIT</Caption>
+            <Caption x={100} y={106}>{t(UI.figSingularity)}</Caption>
           </>
         )}
         {kind === 'formation' && (
@@ -84,7 +87,7 @@ export default function Diagram({ kind }: { kind: string }) {
             <motion.circle cx="100" cy="60" r="12" fill="none" stroke="#FFB877" strokeWidth="0.6" variants={draw} custom={1} />
             <motion.circle cx="100" cy="60" r="30" fill="none" stroke="#FFB877" strokeWidth="0.4" strokeDasharray="1 3" variants={draw} custom={2} />
             <motion.circle cx="162" cy="60" r="5" fill="#000" stroke={accent} strokeWidth="0.8" variants={draw} custom={3} />
-            <Caption x={100} y={104}>STAR · SUPERNOVA · REMNANT</Caption>
+            <Caption x={100} y={104}>{t(UI.figFormation)}</Caption>
           </>
         )}
         {kind === 'scale' && (

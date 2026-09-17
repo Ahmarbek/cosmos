@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CHARACTER_BY_ID } from '../data/characters';
+import { useLang, useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import { sendChat } from '../lib/ai/provider';
 import type { ChatMessage } from '../lib/ai/types';
 import { useStore } from '../state/useStore';
@@ -16,6 +18,8 @@ const ease = [0.16, 1, 0.3, 1] as const;
  * panel reports which one replied rather than leaving it ambiguous.
  */
 export default function ChatPanel() {
+  const t = useT();
+  const lang = useLang();
   const chatWith = useStore((s) => s.chatWith);
   const setChatWith = useStore((s) => s.setChatWith);
   const isTouch = useStore((s) => s.isTouch);
@@ -58,13 +62,13 @@ export default function ChatPanel() {
     abort.current = ctrl;
 
     try {
-      const res = await sendChat({ character: character.id, message: q, history }, ctrl.signal);
+      const res = await sendChat({ character: character.id, message: q, history, lang }, ctrl.signal);
       setSource(res.source);
       setMessages((m) => [...m, { role: 'assistant', content: res.response }]);
       blip(880, 0.07, 0.03);
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
-      setError('The character could not be reached. Try again.');
+      setError(t(UI.characterUnreachable));
     } finally {
       setBusy(false);
     }
@@ -92,7 +96,7 @@ export default function ChatPanel() {
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="t-eyebrow mb-3" style={{ color: character.palette[0] }}>
-                {character.label}
+                {t(character.label)}
               </p>
               <h3 className="font-display text-4xl leading-none">{character.name}</h3>
             </div>
@@ -101,12 +105,11 @@ export default function ChatPanel() {
               className="t-eyebrow hover:text-bone transition-colors duration-500 shrink-0 pt-1"
               data-cursor="hover"
             >
-              Close ✕
+              {t(UI.close)} ✕
             </button>
           </div>
           <p className="mt-5 text-[0.68rem] leading-relaxed text-smoke/80">
-            A simulation, not the person. Answers are drawn from documented public information
-            and are not genuine quotations.
+            {t(UI.chatDisclaimer)}
           </p>
         </header>
 
@@ -116,11 +119,11 @@ export default function ChatPanel() {
           role="log"
           aria-live="polite"
         >
-          <p className="t-body">{character.greeting}</p>
+          <p className="t-body">{t(character.greeting)}</p>
 
           {messages.map((m, i) => (
             <div key={i} className={m.role === 'user' ? 'self-end max-w-[85%]' : 'max-w-[92%]'}>
-              <p className="t-eyebrow mb-2">{m.role === 'user' ? 'You' : character.name}</p>
+              <p className="t-eyebrow mb-2">{m.role === 'user' ? t(UI.you) : character.name}</p>
               <p
                 className="text-[0.95rem] leading-relaxed font-light"
                 style={{
@@ -135,7 +138,7 @@ export default function ChatPanel() {
           ))}
 
           {busy && (
-            <div className="flex items-center gap-2" aria-label="Thinking">
+            <div className="flex items-center gap-2" aria-label={t(UI.thinking)}>
               {[0, 1, 2].map((i) => (
                 <span
                   key={i}
@@ -153,12 +156,12 @@ export default function ChatPanel() {
             <div className="flex flex-wrap gap-2 mt-2">
               {character.suggested.map((q) => (
                 <button
-                  key={q}
-                  onClick={() => ask(q)}
+                  key={t(q)}
+                  onClick={() => ask(t(q))}
                   className="text-[0.68rem] tracking-[0.12em] uppercase border border-[rgba(234,234,242,0.2)] px-3 py-2 hover:border-[rgba(234,234,242,0.6)] transition-colors duration-500"
                   data-cursor="hover"
                 >
-                  {q}
+                  {t(q)}
                 </button>
               ))}
             </div>
@@ -177,10 +180,10 @@ export default function ChatPanel() {
               ref={input}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ask a question…"
+              placeholder={t(UI.askAQuestion)}
               maxLength={400}
               className="flex-1 bg-transparent border-b border-[rgba(234,234,242,0.22)] focus:border-bone/70 outline-none py-3 text-[0.95rem] font-light placeholder:text-smoke/50 transition-colors duration-500"
-              aria-label="Your question"
+              aria-label={t(UI.yourQuestion)}
             />
             <button
               type="submit"
@@ -188,17 +191,17 @@ export default function ChatPanel() {
               className="t-eyebrow hover:text-bone transition-colors duration-500 disabled:opacity-30"
               data-cursor="hover"
             >
-              Send →
+              {t(UI.send)}
             </button>
           </div>
           <p className="t-eyebrow mt-4 opacity-45">
             {source === 'model'
-              ? 'Answered by a language model, constrained to public record'
+              ? t(UI.answeredByModel)
               : source === 'mock'
-                ? 'Answered by the local engine — no API key configured'
+                ? t(UI.answeredByLocal)
                 : isTouch
-                  ? 'Tap close to step back into the hall'
-                  : 'Press Escape to step back into the hall'}
+                  ? t(UI.tapToClose)
+                  : t(UI.escToClose)}
           </p>
         </form>
       </motion.aside>

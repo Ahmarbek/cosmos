@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { detectCapabilities } from '../../hooks/useCapabilities';
 import { getEarthTextures, tryLoadRealTextures } from '../../utils/earthTextures';
+import { useT } from '../../i18n';
+import { UI } from '../../i18n/ui';
 
 interface Step {
-  label: string;
+  label: import('../../i18n').Text;
   run: () => void | Promise<void>;
 }
 
@@ -17,23 +19,24 @@ interface Step {
  * both the right dramatic beat and the user gesture that lets audio start.
  */
 const STEPS: Step[] = [
-  { label: 'Calibrating renderer', run: () => void detectCapabilities() },
-  { label: 'Seeding starfield', run: () => {} },
-  { label: 'Integrating geodesics', run: () => {} },
-  { label: 'Assembling solar system', run: () => {} },
+  { label: UI.loadRenderer, run: () => void detectCapabilities() },
+  { label: UI.loadStarfield, run: () => {} },
+  { label: UI.loadGeodesics, run: () => {} },
+  { label: UI.loadSystem, run: () => {} },
   {
     // the generated maps are baked first so the planet is never texture-less,
     // then the real NASA imagery replaces them if it is present
-    label: 'Mapping Earth',
+    label: UI.loadEarth,
     run: async () => {
       const set = getEarthTextures();
       await tryLoadRealTextures(set);
     },
   },
-  { label: 'Opening the archive', run: () => {} },
+  { label: UI.loadArchive, run: () => {} },
 ];
 
 export default function Loader({ onEnter }: { onEnter: () => void }) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -85,7 +88,7 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
     >
       <div className="relative h-full w-full flex flex-col justify-between px-[6vw] py-[7vh]">
         <div className="flex items-start justify-between">
-          <span className="t-eyebrow">Cosmos</span>
+          <span className="t-eyebrow">{t(UI.wordmarkSmall)}</span>
           <span className="t-eyebrow tabular-nums">
             {String(Math.min(step + (done ? 0 : 1), STEPS.length)).padStart(2, '0')} / 06
           </span>
@@ -99,7 +102,7 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
             transition={{ duration: 2.4, ease: [0.16, 1, 0.3, 1] }}
             style={{ paddingLeft: '0.14em' }}
           >
-            COSMOS
+            {t(UI.wordmark)}
           </motion.h1>
 
           <motion.p
@@ -108,7 +111,7 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.1, duration: 1.4 }}
           >
-            A journey from everything to us
+            {t(UI.tagline)}
           </motion.p>
         </div>
 
@@ -116,14 +119,14 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
           <div className="flex items-end justify-between mb-4">
             <AnimatePresence mode="wait">
               <motion.span
-                key={done ? 'ready' : STEPS[Math.min(step, STEPS.length - 1)].label}
+                key={done ? 'ready' : t(STEPS[Math.min(step, STEPS.length - 1)].label)}
                 className="t-label"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.4 }}
               >
-                {done ? 'Systems nominal' : STEPS[Math.min(step, STEPS.length - 1)].label}
+                {done ? t(UI.systemsNominal) : t(STEPS[Math.min(step, STEPS.length - 1)].label)}
               </motion.span>
             </AnimatePresence>
             <span className="t-label tabular-nums">{done ? '100' : pct}%</span>
@@ -150,7 +153,7 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
                   data-cursor="hover"
                   autoFocus
                 >
-                  <span>Enter</span>
+                  <span>{t(UI.enter)}</span>
                   <span aria-hidden>→</span>
                 </motion.button>
               )}
@@ -158,7 +161,7 @@ export default function Loader({ onEnter }: { onEnter: () => void }) {
           </div>
 
           <p className="t-eyebrow text-center mt-2 opacity-50">
-            Scroll to travel · Sound optional
+            {t(UI.scrollSound)}
           </p>
         </div>
       </div>

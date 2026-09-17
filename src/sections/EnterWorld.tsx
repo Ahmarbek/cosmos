@@ -1,4 +1,6 @@
 import Cue from '../components/ui/Cue';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import { useStore } from '../state/useStore';
 import { band, range } from '../utils/math';
 import { blip } from '../lib/audio';
@@ -10,6 +12,7 @@ import { blip } from '../lib/audio';
  * with, and this time it is a door rather than a star.
  */
 export default function EnterWorld() {
+  const t = useT();
   const p = useStore((s) => s.progress);
   const setStage = useStore((s) => s.setStage);
 
@@ -26,7 +29,7 @@ export default function EnterWorld() {
       />
 
       <Cue a={0.928} b={0.944} c={0.955} d={0.966} className="stack grid place-items-center px-[8vw]">
-        <h2 className="t-display text-center scrim">Enough watching.</h2>
+        <h2 className="t-display text-center scrim">{t(UI.enoughWatching)}</h2>
       </Cue>
 
       {/* the returning point of light */}
@@ -53,7 +56,7 @@ export default function EnterWorld() {
         style={{ opacity: cta, pointerEvents: cta > 0.6 ? 'auto' : 'none' }}
       >
         <div className="text-center scrim">
-          <h2 className="t-display glow-soft mb-12">Enter the world.</h2>
+          <h2 className="t-display glow-soft mb-12">{t(UI.enterTheWorld)}</h2>
           <button
             className="btn-cosmos"
             onClick={() => {
@@ -62,11 +65,11 @@ export default function EnterWorld() {
             }}
             data-cursor="hover"
           >
-            <span>Enter</span>
+            <span>{t(UI.enter)}</span>
             <span aria-hidden>◈</span>
           </button>
           <p className="t-eyebrow mt-10 opacity-60 max-w-[40ch] mx-auto leading-relaxed">
-            A walkable memorial hall · Contains AI-simulated characters, not the real people
+            {t(UI.worldNote)}
           </p>
         </div>
       </div>

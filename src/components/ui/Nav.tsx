@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { CHAPTERS, chapterAt, useStore } from '../../state/useStore';
 import { scrollToProgress } from '../../hooks/useScrollJourney';
+import { useT } from '../../i18n';
+import { UI } from '../../i18n/ui';
+import LanguageToggle from './LanguageToggle';
 import SoundToggle from './SoundToggle';
 import { blip } from '../../lib/audio';
 
@@ -13,6 +16,7 @@ import { blip } from '../../lib/audio';
  * rather than chrome.
  */
 export default function Nav({ visible }: { visible: boolean }) {
+  const t = useT();
   const progress = useStore((s) => s.rawProgress);
   const interactive = useStore((s) => s.interactive);
   const active = chapterAt(progress).id;
@@ -35,19 +39,20 @@ export default function Nav({ visible }: { visible: boolean }) {
           className="t-eyebrow hover:text-bone transition-colors duration-500"
           data-cursor="hover"
         >
-          Cosmos
+          {t(UI.wordmarkSmall)}
         </button>
       </div>
 
-      {/* sound */}
-      <div className="absolute top-[3vh] right-[4vw] pointer-events-auto">
+      {/* language and sound */}
+      <div className="absolute top-[3vh] right-[4vw] pointer-events-auto flex items-center gap-6">
+        <LanguageToggle />
         <SoundToggle />
       </div>
 
       {/* chapter rail */}
       <nav
         className="absolute right-[4vw] top-1/2 -translate-y-1/2 pointer-events-auto hidden md:block group/rail"
-        aria-label="Journey chapters"
+        aria-label={t(UI.journeyChapters)}
       >
         <ol className="flex flex-col gap-5 items-end">
           {CHAPTERS.map((c) => {
@@ -65,7 +70,7 @@ export default function Nav({ visible }: { visible: boolean }) {
                     className="text-[0.6rem] tracking-[0.22em] uppercase transition-all duration-500 opacity-0 group-hover/rail:opacity-100 translate-x-2 group-hover/rail:translate-x-0"
                     style={{ color: isActive ? 'var(--bone)' : 'var(--ash)' }}
                   >
-                    {c.label}
+                    {t(c.label)}
                   </span>
                   <span
                     className="text-[0.6rem] tracking-[0.18em] tabular-nums transition-colors duration-500"
@@ -101,7 +106,7 @@ export default function Nav({ visible }: { visible: boolean }) {
         <span className="t-eyebrow tabular-nums">
           {chapterAt(progress).index} / 06
         </span>
-        <span className="t-eyebrow opacity-60">{chapterAt(progress).label}</span>
+        <span className="t-eyebrow opacity-60">{t(chapterAt(progress).label)}</span>
       </div>
 
       {!interactive && (

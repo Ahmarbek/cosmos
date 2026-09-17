@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import Cue from '../components/ui/Cue';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import Portrait from '../components/ui/Portrait';
 import { ICONS } from '../data/icons';
 import { useStore } from '../state/useStore';
@@ -20,6 +22,7 @@ const RAIL_END = 0.935;
  * people who changed culture.
  */
 export default function Humanity() {
+  const t = useT();
   const p = useStore((s) => s.progress);
   const setOpenIcon = useStore((s) => s.setOpenIcon);
   const isTouch = useStore((s) => s.isTouch);
@@ -47,8 +50,8 @@ export default function Humanity() {
   const total = ICONS.length * (cardW + gap) - gap + padding * 2;
   const travel = Math.max(0, total - vw);
 
-  const t = range(p, RAIL_START, RAIL_END);
-  const x = -travel * t;
+  const railProgress = range(p, RAIL_START, RAIL_END);
+  const x = -travel * railProgress;
 
   // whichever card is nearest the centre of the viewport is "live"
   const centre = (vw / 2 - padding - x) / (cardW + gap);
@@ -59,9 +62,9 @@ export default function Humanity() {
     <div className="stack pointer-events-none overflow-hidden">
       <Cue a={0.754} b={0.768} c={0.780} d={0.793} className="stack grid place-items-center px-[8vw]">
         <div className="text-center scrim">
-          <p className="t-eyebrow mb-6">Chapter 05</p>
+          <p className="t-eyebrow mb-6">{t(UI.chapter05)}</p>
           <h2 className="t-display-sm max-w-[20ch] leading-[1.08]">
-            From billions of people, a few became unforgettable.
+            {t(UI.iconsHead)}
           </h2>
         </div>
       </Cue>
@@ -75,10 +78,10 @@ export default function Humanity() {
           className="font-display leading-none"
           style={{ letterSpacing: '0.1em', fontSize: 'clamp(1.8rem, 3.4vw, 3.2rem)' }}
         >
-          ICONS
+          {t(UI.iconsWord)}
         </h2>
         <p className="t-eyebrow mt-3 max-w-[34ch] leading-relaxed">
-          People who changed culture · Not a ranking
+          {t(UI.iconsSub)}
         </p>
       </div>
 
@@ -110,7 +113,7 @@ export default function Humanity() {
                   setOpenIcon(icon.id);
                 }}
                 data-cursor="hover"
-                aria-label={`Open profile: ${icon.name}`}
+                aria-label={`${t(UI.openProfile)}: ${icon.name}`}
                 tabIndex={railOpacity > 0.5 ? 0 : -1}
                 aria-hidden={railOpacity <= 0.5}
               >
@@ -151,14 +154,14 @@ export default function Humanity() {
                   {icon.name}
                 </h3>
                 <p className="t-eyebrow mt-2">
-                  {icon.discipline.split(',')[0]} · {icon.born}
+                  {t(icon.discipline).split(',')[0]} · {icon.born}
                   {icon.died ? `–${icon.died}` : '–'}
                 </p>
                 <span
                   className="block mt-4 text-[0.6rem] tracking-[0.24em] uppercase transition-all duration-700"
                   style={{ color: isActive ? icon.palette[0] : 'transparent' }}
                 >
-                  Meet icon →
+                  {t(UI.meetIcon)}
                 </span>
               </button>
             );
@@ -173,7 +176,7 @@ export default function Humanity() {
       >
         <div
           className="h-full bg-bone/60 origin-left transition-transform duration-300"
-          style={{ transform: `scaleX(${Math.max(t, 0.02)})`, width: '100%' }}
+          style={{ transform: `scaleX(${Math.max(railProgress, 0.02)})`, width: '100%' }}
         />
       </div>
     </div>

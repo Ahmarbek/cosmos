@@ -37,6 +37,9 @@ export default function Planet({ def, segments, selected, onSelect, onHover, reg
   const time = useRef(Math.random() * 100);
 
   const seed = useMemo(() => (def.id === 'jupiter' ? 0.9 : Math.random() * 0.4), [def.id]);
+  /** Scratch for the light direction; eight planets at sixty hertz is enough
+      allocation to be worth not doing. */
+  const lightDir = useMemo(() => new THREE.Vector3(), []);
 
   const surfaceMat = useMemo(
     () =>
@@ -101,7 +104,7 @@ export default function Planet({ def, segments, selected, onSelect, onHover, reg
     if (!g) return;
 
     // sun is at the parent origin, so this is the direction toward the light
-    const dir = g.position.clone().negate().normalize();
+    const dir = lightDir.copy(g.position).negate().normalize();
     surfaceMat.uniforms.uLightDir.value.copy(dir);
     surfaceMat.uniforms.uTime.value = time.current;
     if (atmoMat) atmoMat.uniforms.uLightDir.value.copy(dir);

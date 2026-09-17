@@ -65,6 +65,9 @@ export default function Starfield({ count, pixelRatio }: Props) {
     return g;
   }, [count]);
 
+  // Stable across the life of the field. Rebuilding this object when the
+  // pixel ratio changes would reset uTime and uOpacity with it, and the whole
+  // sky would fade in again from black in the middle of the flight.
   const uniforms = useMemo(
     () => ({
       uCamPos: { value: new THREE.Vector3() },
@@ -75,11 +78,15 @@ export default function Starfield({ count, pixelRatio }: Props) {
       uWarp: { value: 0 },
       uOpacity: { value: 0 },
     }),
-    [pixelRatio]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   useFrame((_, dt) => {
     const u = uniforms;
+    // a star is sized in device pixels, so it has to follow the pixel ratio
+    // when the monitor trims it
+    u.uPixelRatio.value = pixelRatio;
     u.uCamPos.value.copy(camera.position);
     u.uTime.value += dt;
 

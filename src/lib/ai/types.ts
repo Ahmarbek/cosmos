@@ -1,3 +1,5 @@
+import type { Lang } from '../../i18n/lang';
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -7,6 +9,8 @@ export interface ChatRequest {
   character: string;
   message: string;
   history: ChatMessage[];
+  /** the language the site is being read in, which the answer follows */
+  lang: Lang;
 }
 
 export interface ChatResponse {

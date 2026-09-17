@@ -4,6 +4,8 @@ import type { ControlState } from './useWorldControls';
 import { CHARACTER_BY_ID } from '../data/characters';
 import { useStore } from '../state/useStore';
 import { blip } from '../lib/audio';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -82,18 +84,18 @@ function Stick({ controls }: { controls: React.MutableRefObject<ControlState> })
   );
 }
 
-const KEYS_DESKTOP: [string, string][] = [
-  ['W A S D', 'move'],
-  ['Mouse', 'look'],
-  ['Shift', 'run'],
-  ['Space', 'jump'],
-  ['E', 'interact'],
-  ['Esc', 'release'],
+const KEYS_DESKTOP: [import('../i18n').Text, import('../i18n').Text][] = [
+  ['W A S D', UI.keyMove],
+  [UI.keyMouse, UI.keyLook],
+  ['Shift', UI.keyRun],
+  ['Space', UI.keyJump],
+  ['E', UI.keyInteract],
+  ['Esc', UI.keyRelease],
 ];
-const KEYS_TOUCH: [string, string][] = [
-  ['Stick', 'move'],
-  ['Drag', 'look'],
-  ['Tap', 'interact'],
+const KEYS_TOUCH: [import('../i18n').Text, import('../i18n').Text][] = [
+  [UI.keyStick, UI.keyMove],
+  [UI.keyDrag, UI.keyLook],
+  [UI.keyTap, UI.keyInteract],
 ];
 
 export default function HUD({ controls }: { controls: React.MutableRefObject<ControlState> }) {
@@ -105,6 +107,7 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
   const setChatWith = useStore((s) => s.setChatWith);
   const [briefed, setBriefed] = useState(false);
 
+  const t = useT();
   const character = near ? CHARACTER_BY_ID[near] : null;
 
   return (
@@ -128,22 +131,20 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
             transition={{ duration: 0.6, ease }}
           >
             <div className="max-w-[54ch] text-center">
-              <p className="t-eyebrow mb-7">The Hall of Icons</p>
-              <h2 className="t-display-sm mb-9">Walk it yourself.</h2>
+              <p className="t-eyebrow mb-7">{t(UI.hallOfIcons)}</p>
+              <h2 className="t-display-sm mb-9">{t(UI.walkItYourself)}</h2>
               <div className="flex flex-wrap justify-center gap-x-7 gap-y-4 mb-10">
                 {(isTouch ? KEYS_TOUCH : KEYS_DESKTOP).map(([k, v]) => (
-                  <span key={k} className="flex items-center gap-2">
+                  <span key={t(k)} className="flex items-center gap-2">
                     <kbd className="text-[0.6rem] tracking-[0.18em] uppercase text-bone border border-[rgba(234,234,242,0.24)] px-2 py-1">
-                      {k}
+                      {t(k)}
                     </kbd>
-                    <span className="t-eyebrow">{v}</span>
+                    <span className="t-eyebrow">{t(v)}</span>
                   </span>
                 ))}
               </div>
               <p className="t-body mb-10 mx-auto max-w-[46ch]">
-                The ten figures here are interactive AI characters — simulations built from
-                documented public information. They are not the real people, and nothing they
-                say is a genuine quotation.
+                {t(UI.worldBrief)}
               </p>
               <button
                 className="btn-cosmos"
@@ -154,7 +155,7 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
                 data-cursor="hover"
                 autoFocus
               >
-                <span>Begin</span>
+                <span>{t(UI.begin)}</span>
                 <span aria-hidden>◈</span>
               </button>
             </div>
@@ -164,7 +165,7 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
 
       {briefed && !locked && !chatWith && !isTouch && (
         <div className="absolute left-1/2 bottom-[15vh] -translate-x-1/2">
-          <p className="t-eyebrow animate-pulse">Click to take control</p>
+          <p className="t-eyebrow animate-pulse">{t(UI.clickToTakeControl)}</p>
         </div>
       )}
 
@@ -185,11 +186,11 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
             transition={{ duration: 0.4, ease }}
           >
             <p className="t-eyebrow mb-3" style={{ color: character.palette[0] }}>
-              {character.label}
+              {t(character.label)}
             </p>
             <p className="font-display text-3xl mb-5">{character.name}</p>
             <button className="btn-cosmos" onClick={() => setChatWith(character.id)} data-cursor="hover">
-              <span>{isTouch ? 'Tap to interact' : 'Press E to interact'}</span>
+              <span>{t(isTouch ? UI.tapToInteract : UI.pressEToInteract)}</span>
             </button>
           </motion.div>
         )}
@@ -205,7 +206,7 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
             }}
             data-cursor="hover"
           >
-            ← Return to Cosmos
+            {t(UI.returnToCosmos)}
           </button>
         </div>
       )}
@@ -213,7 +214,7 @@ export default function HUD({ controls }: { controls: React.MutableRefObject<Con
       {!chatWith && (
         <div className="absolute bottom-[4vh] left-[4vw] hidden md:block">
           <p className="t-eyebrow opacity-45">
-            {locked ? 'WASD · Shift · Space · E' : 'Paused'}
+            {locked ? 'WASD · Shift · Space · E' : t(UI.paused)}
           </p>
         </div>
       )}

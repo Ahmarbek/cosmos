@@ -6,6 +6,8 @@ import { makeLabelTexture } from '../utils/labelTexture';
 import { DEFAULT_FIGURE, FACE_DECALS, FIGURES, buildHumanoid, faceDecalGeometry } from './humanoid';
 import CharacterModel from './CharacterModel';
 import { readStore } from '../state/useStore';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import { damp } from '../utils/math';
 
 /**
@@ -242,6 +244,7 @@ export default function Avatar({ station, quality }: { station: Station; quality
   const local = useMemo(() => new THREE.Vector3(), []);
   const active = useRef(0);
   const t = useRef(Math.random() * 10);
+  const translate = useT();
 
   const figure = FIGURES[station.id] ?? DEFAULT_FIGURE;
   const hasFace = FACE_DECALS.has(station.id);
@@ -270,16 +273,18 @@ export default function Avatar({ station, quality }: { station: Station; quality
     [station]
   );
 
+  const subtitle = translate(UI.interactiveAiCharacter);
   const label = useMemo(
     () =>
       makeLabelTexture({
         text: station.name,
-        sub: 'Interactive AI character',
+        sub: subtitle,
         width: 1024,
         height: 256,
       }),
-    [station.name]
+    [station.name, subtitle]
   );
+  useEffect(() => () => label.dispose(), [label]);
 
   useFrame((_, dt) => {
     t.current += dt;
@@ -343,7 +348,7 @@ export default function Avatar({ station, quality }: { station: Station; quality
           otherwise the procedural one. Both inherit the float and the facing. */}
       <group ref={group}>
         <Suspense fallback={<mesh geometry={geometry} material={mat} renderOrder={4} />}>
-          <CharacterModel id={station.id} height={figure.height}>
+          <CharacterModel id={station.id} height={figure.height} animate={quality !== 'low'}>
             <mesh geometry={geometry} material={mat} renderOrder={4} />
             {hasFace && (
               <FaceDecal

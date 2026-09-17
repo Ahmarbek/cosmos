@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
+import { PerformanceMonitor } from '@react-three/drei';
 import Museum from './Museum';
 import Player from './Player';
 import Avatar from './Avatar';
@@ -9,7 +9,7 @@ import HUD from './HUD';
 import ChatPanel from './ChatPanel';
 import { STATIONS } from './worldLayout';
 import { useWorldControls } from './useWorldControls';
-import { detectCapabilities } from '../hooks/useCapabilities';
+import { useAdaptiveQuality } from '../hooks/useAdaptiveQuality';
 import { useStore, type Quality } from '../state/useStore';
 import { waitForFonts } from '../utils/labelTexture';
 import { installDevHarness } from '../three/devHarness';
@@ -22,9 +22,7 @@ import { installDevHarness } from '../three/devHarness';
  * cost is paid by anyone who never reaches the threshold.
  */
 export default function World({ quality }: { quality: Quality }) {
-  const caps = detectCapabilities();
-  const [dpr, setDpr] = useState(Math.min(window.devicePixelRatio || 1, caps.maxDpr));
-  const [tier, setTier] = useState<Quality>(quality);
+  const { dpr, tier, onDecline, onIncline, onFallback } = useAdaptiveQuality(quality);
   const [fontsReady, setFontsReady] = useState(false);
   const controls = useWorldControls(true);
   const chatWith = useStore((s) => s.chatWith);
@@ -61,7 +59,7 @@ export default function World({ quality }: { quality: Quality }) {
         dpr={dpr}
         shadows={false}
         gl={{
-          antialias: tier !== 'low',
+          antialias: quality !== 'low',
           powerPreference: 'high-performance',
           alpha: false,
           stencil: false,
@@ -70,6 +68,9 @@ export default function World({ quality }: { quality: Quality }) {
         camera={{ fov: 72, near: 0.1, far: 600, position: [0, 1.68, 14] }}
         onCreated={(state) => {
           const { gl, scene } = state;
+          // Asking for a restore is opt-in: without preventDefault the browser
+          // never fires contextrestored and a recoverable blip is permanent.
+          gl.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault());
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.1;
           scene.background = new THREE.Color('#02030a');
@@ -78,12 +79,13 @@ export default function World({ quality }: { quality: Quality }) {
         }}
       >
         <PerformanceMonitor
-          onDecline={() => {
-            setDpr((d) => Math.max(0.7, d * 0.85));
-            setTier((t) => (t === 'high' ? 'medium' : 'low'));
-          }}
+          ms={300}
+          iterations={8}
+          flipflops={6}
+          onDecline={onDecline}
+          onIncline={onIncline}
+          onFallback={onFallback}
         />
-        <AdaptiveDpr />
         <Suspense fallback={null}>
           <Museum quality={tier} />
           {fontsReady &&

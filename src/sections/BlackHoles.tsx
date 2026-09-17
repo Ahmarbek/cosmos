@@ -1,4 +1,6 @@
 import Cue from '../components/ui/Cue';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import Diagram from '../components/ui/Diagram';
 import { BH_DISCLAIMER, BH_TOPICS } from '../data/blackhole';
 import { useStore } from '../state/useStore';
@@ -29,6 +31,7 @@ const at = (v: number) => TOPICS_START + v * TOPICS_SPAN;
  * name what the eye is already looking at.
  */
 export default function BlackHoles() {
+  const t = useT();
   const p = useStore((s) => s.progress);
   const interactive = useStore((s) => s.interactive);
   const setInteractive = useStore((s) => s.setInteractive);
@@ -40,22 +43,21 @@ export default function BlackHoles() {
       {/* the chapter card, held alone: nothing else is on screen until d */}
       <Cue a={0.14} b={0.15} c={0.168} d={0.182} className="stack grid place-items-center px-[8vw]">
         <div className="text-center scrim">
-          <p className="t-eyebrow mb-6">Chapter 02</p>
-          <h2 className="t-display glow-soft">Black Holes</h2>
+          <p className="t-eyebrow mb-6">{t(UI.chapter02)}</p>
+          <h2 className="t-display glow-soft">{t(UI.chapterBlackHoles)}</h2>
           <p className="t-lead mt-8 max-w-[34ch] mx-auto">
-            The densest objects that exist, and the only places where the theory that
-            describes gravity stops being able to describe anything.
+            {t(UI.blackHolesLead)}
           </p>
         </div>
       </Cue>
 
       {!inspecting &&
-        BH_TOPICS.map((t, i) => {
-          const g = at(t.at);
+        BH_TOPICS.map((topic, i) => {
+          const g = at(topic.at);
           const left = i % 2 === 0;
           return (
             <Cue
-              key={t.id}
+              key={topic.id}
               a={g - 0.026}
               b={g - 0.012}
               c={g + 0.010}
@@ -66,15 +68,15 @@ export default function BlackHoles() {
             >
               <article className="max-w-[38ch] w-full md:w-auto panel-pad">
                 <div className="flex items-center gap-4 mb-5">
-                  <span className="t-eyebrow tabular-nums">{t.index}</span>
+                  <span className="t-eyebrow tabular-nums">{topic.index}</span>
                   <span className="h-px flex-1 bg-[rgba(234,234,242,0.16)] min-w-[40px]" />
                 </div>
-                <h3 className="t-display-sm mb-4">{t.title}</h3>
-                <p className="t-lead mb-4">{t.lead}</p>
-                <p className="t-body">{t.body}</p>
-                {t.figure && (
+                <h3 className="t-display-sm mb-4">{t(topic.title)}</h3>
+                <p className="t-lead mb-4">{t(topic.lead)}</p>
+                <p className="t-body">{t(topic.body)}</p>
+                {topic.figure && (
                   <div className="mt-8 opacity-80">
-                    <Diagram kind={t.figure} />
+                    <Diagram kind={topic.figure} />
                   </div>
                 )}
               </article>
@@ -100,7 +102,7 @@ export default function BlackHoles() {
             }}
             data-cursor="hover"
           >
-            <span>Inspect the object</span>
+            <span>{t(UI.inspectObject)}</span>
             <span aria-hidden>◎</span>
           </button>
         </Cue>
@@ -112,14 +114,14 @@ export default function BlackHoles() {
         style={{ opacity: inChapter * 0.5 }}
       >
         <p className="text-[0.58rem] tracking-[0.2em] uppercase text-smoke max-w-[72ch] mx-auto leading-relaxed">
-          {BH_DISCLAIMER}
+          {t(BH_DISCLAIMER)}
         </p>
       </div>
 
       {inspecting && (
         <div className="stack pointer-events-none">
           <div className="absolute top-[12vh] left-0 w-full grid place-items-center">
-            <p className="t-eyebrow">Drag to orbit · Scroll to zoom</p>
+            <p className="t-eyebrow">{t(UI.dragOrbitZoom)}</p>
           </div>
           <div className="absolute bottom-[12vh] left-0 w-full grid place-items-center">
             <button
@@ -131,7 +133,7 @@ export default function BlackHoles() {
               data-cursor="hover"
             >
               <span aria-hidden>←</span>
-              <span>Return to the journey</span>
+              <span>{t(UI.returnToJourney)}</span>
             </button>
           </div>
         </div>

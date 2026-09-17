@@ -1,9 +1,10 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { MeshReflectorMaterial, Stars } from '@react-three/drei';
 import { ARENA_RADIUS, STATIONS } from './worldLayout';
 import { makeLabelTexture } from '../utils/labelTexture';
+import { useT } from '../i18n';
 import type { Quality } from '../state/useStore';
 import { mulberry32 } from '../utils/noise';
 
@@ -108,51 +109,99 @@ function Centrepiece() {
   );
 }
 
+/**
+ * The ten alcoves are identical except for their plate and their colour, so
+ * the parts that do not vary are built once and shared. Ten copies of the same
+ * standard material are ten more programs to look up and ten more uniform
+ * uploads per frame for no difference on screen.
+ */
+const MONOLITH_GEO = new THREE.BoxGeometry(7.2, 15, 0.7);
+const MONOLITH_MAT = new THREE.MeshStandardMaterial({
+  color: '#0d0f16',
+  metalness: 0.82,
+  roughness: 0.38,
+});
+const SEAM_GEO = new THREE.PlaneGeometry(0.07, 13);
+const INLAY_GEO = new THREE.PlaneGeometry(0.05, 11);
+const NUMERAL_GEO = new THREE.PlaneGeometry(3.2, 1.6);
+const RING_MAT = new THREE.MeshBasicMaterial({
+  color: '#8fb0ff',
+  transparent: true,
+  opacity: 0.34,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+});
+
+/** One pair per palette colour, rather than one pair per alcove. */
+const seamMats = new Map<string, THREE.MeshBasicMaterial>();
+function seamMaterial(colour: string) {
+  let m = seamMats.get(colour);
+  if (!m) {
+    m = new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: 0.38 });
+    seamMats.set(colour, m);
+  }
+  return m;
+}
+
+const inlayMats = new Map<string, THREE.MeshBasicMaterial>();
+function inlayMaterial(colour: string) {
+  let m = inlayMats.get(colour);
+  if (!m) {
+    m = new THREE.MeshBasicMaterial({
+      color: colour,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    inlayMats.set(colour, m);
+  }
+  return m;
+}
+
 function Alcove({ station, index }: { station: (typeof STATIONS)[number]; index: number }) {
+  const t = useT();
+  // Baked to a canvas, so it is rebuilt — and the old one released — whenever
+  // the language changes.
+  const discipline = t(station.discipline);
   const plate = useMemo(
     () =>
       makeLabelTexture({
         text: String(index + 1).padStart(2, '0'),
-        sub: station.discipline.slice(0, 34),
+        sub: discipline.slice(0, 34),
         width: 512,
         height: 256,
       }),
-    [index, station.discipline]
+    [index, discipline]
   );
+  useEffect(() => () => plate.dispose(), [plate]);
+
+  const seam = seamMaterial(station.palette[0]);
+  const inlay = inlayMaterial(station.palette[0]);
 
   return (
     <group position={[station.position.x * 1.24, 0, station.position.z * 1.24]} rotation={[0, station.facing, 0]}>
       {/* monolith */}
-      <mesh position={[0, 7.5, 0]}>
-        <boxGeometry args={[7.2, 15, 0.7]} />
-        <meshStandardMaterial color="#0d0f16" metalness={0.82} roughness={0.38} />
-      </mesh>
+      <mesh position={[0, 7.5, 0]} geometry={MONOLITH_GEO} material={MONOLITH_MAT} />
       {/* Lit seams, paired off-centre. A single central seam runs straight down
           behind whoever is standing on the plinth and cuts the figure in half. */}
       {[-2.6, 2.6].map((x) => (
-        <mesh key={x} position={[x, 7.5, 0.38]}>
-          <planeGeometry args={[0.07, 13]} />
-          <meshBasicMaterial color={station.palette[0]} transparent opacity={0.38} />
-        </mesh>
+        <mesh key={x} position={[x, 7.5, 0.38]} geometry={SEAM_GEO} material={seam} />
       ))}
       {/* numeral */}
-      <mesh position={[0, 12.4, 0.38]}>
-        <planeGeometry args={[3.2, 1.6]} />
+      <mesh position={[0, 12.4, 0.38]} geometry={NUMERAL_GEO}>
         <meshBasicMaterial map={plate} transparent depthWrite={false} opacity={0.6} />
       </mesh>
       {/* floor inlay leading to the plinth — a pair of hairlines rather than a
           painted slab, which at this scale reads as architecture, not decal */}
       {[-1.1, 1.1].map((x) => (
-        <mesh key={x} position={[x, 0.012, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.05, 11]} />
-          <meshBasicMaterial
-            color={station.palette[0]}
-            transparent
-            opacity={0.35}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-          />
-        </mesh>
+        <mesh
+          key={x}
+          position={[x, 0.012, 5]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          geometry={INLAY_GEO}
+          material={inlay}
+        />
       ))}
     </group>
   );
@@ -188,11 +237,17 @@ export default function Museum({ quality }: { quality: Quality }) {
         {quality === 'low' ? (
           <meshStandardMaterial color="#0a0b11" metalness={0.9} roughness={0.28} />
         ) : (
+          /* The reflection is a second full render of the hall every frame, so
+             its resolution is the single most expensive number in the world.
+             It is also the least visible one: the result is blurred hard and
+             mixed at low strength, and halving it is not something you can see
+             on the floor — where doubling it is something you can feel in the
+             frame time. */
           <MeshReflectorMaterial
-            resolution={quality === 'high' ? 1024 : 512}
+            resolution={quality === 'high' ? 512 : 256}
             mixBlur={0.85}
             mixStrength={7}
-            blur={[260, 80]}
+            blur={quality === 'high' ? [200, 60] : [140, 45]}
             mirror={0.9}
             depthScale={1.05}
             minDepthThreshold={0.5}
@@ -206,15 +261,8 @@ export default function Museum({ quality }: { quality: Quality }) {
 
       {/* concentric floor rings */}
       {[10, 20, 30, 42].map((r) => (
-        <mesh key={r} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+        <mesh key={r} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]} material={RING_MAT}>
           <ringGeometry args={[r, r + 0.035, 128]} />
-          <meshBasicMaterial
-            color="#8fb0ff"
-            transparent
-            opacity={0.34}
-            side={THREE.DoubleSide}
-            depthWrite={false}
-          />
         </mesh>
       ))}
 

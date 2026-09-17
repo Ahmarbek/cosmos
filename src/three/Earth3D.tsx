@@ -1,12 +1,33 @@
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { earthFrag, earthVert } from '../shaders/earth';
 import { atmosphereFrag, atmosphereVert } from '../shaders/star-and-shells';
-import { getEarthTextures } from '../utils/earthTextures';
+import { getEarthTextures, setEarthAnisotropy } from '../utils/earthTextures';
 import { PLANET_BY_ID } from '../data/planets';
-import { readStore } from '../state/useStore';
+import { readStore, type Quality } from '../state/useStore';
 import { damp, smoothstep } from '../utils/math';
+
+/**
+ * Earth is tessellated far past the other planets, and deliberately.
+ *
+ * The flight ends two and a half radii from the surface with the planet
+ * filling the frame, which is closer than anything else in the project is ever
+ * seen. At that framing the silhouette is the picture, and a sphere carries
+ * its facet count entirely on its limb: the shared planet budget put a visible
+ * run of straight edges around the one body the whole journey is aimed at.
+ *
+ * It is also the cheapest possible thing to fix. A sphere is flat-shaded
+ * arithmetic in the vertex stage — the fragment shader, which samples four
+ * maps and a specular term, is where this planet actually costs anything — so
+ * quadrupling the triangles is invisible in the frame time and removes the one
+ * artefact that reads as "a model of the Earth" rather than the Earth.
+ */
+const EARTH_SEGMENTS: Record<Quality, number> = { low: 96, medium: 160, high: 224 };
+
+export function earthSegments(quality: Quality) {
+  return EARTH_SEGMENTS[quality];
+}
 
 interface Props {
   segments: number;
@@ -30,8 +51,16 @@ export default function Earth3D({ segments, selected, onSelect, onHover, registe
   const time = useRef(0);
   const moonT = useRef(1.2);
   const sel = useRef(0);
+  /** Scratch for the light direction, so the frame loop allocates nothing. */
+  const lightDir = useMemo(() => new THREE.Vector3(), []);
 
-  const tex = useMemo(() => getEarthTextures(), []);
+  const { gl } = useThree();
+  const tex = useMemo(() => {
+    // The renderer is the only thing that knows how much filtering the GPU
+    // offers, so the maps are told as soon as there is one to ask.
+    setEarthAnisotropy(gl.capabilities.getMaxAnisotropy());
+    return getEarthTextures();
+  }, [gl]);
 
   const mat = useMemo(
     () =>
@@ -76,12 +105,13 @@ export default function Earth3D({ segments, selected, onSelect, onHover, registe
     if (!g) return;
     const s = readStore();
 
+
     // rotation eases off as the camera closes in, so the hero shot holds still
     const closing = smoothstep(0.60, 0.74, s.progress);
     const spin = THREE.MathUtils.lerp(1, 0.22, closing);
     time.current += dt * spin;
 
-    const dir = g.position.clone().negate().normalize();
+    const dir = lightDir.copy(g.position).negate().normalize();
     mat.uniforms.uLightDir.value.copy(dir);
     mat.uniforms.uTime.value = time.current;
     atmoMat.uniforms.uLightDir.value.copy(dir);

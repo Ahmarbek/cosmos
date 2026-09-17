@@ -5,3 +5,10 @@ dist
 .env.local
 *.log
 .DS_Store
+
+# TypeScript is checked in place (noEmit); nothing should ever be emitted
+# next to the sources, and a bundler resolves a stray .js ahead of its .tsx.
+*.js.map
+src/**/*.js
+server/**/*.js
+tsconfig.tsbuildinfo

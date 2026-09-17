@@ -1,3 +1,4 @@
+import type { Text } from '../i18n/lang';
 /**
  * The Solar System, as an artistic visualisation.
  *
@@ -12,7 +13,7 @@
 
 export interface PlanetDef {
   id: string;
-  name: string;
+  name: Text;
   index: string;
   /** display radius in scene units (artistic) */
   radius: number;
@@ -34,29 +35,29 @@ export interface PlanetDef {
   style: 'cratered' | 'clouded' | 'terrestrial' | 'desert' | 'banded' | 'ice';
   ring?: { inner: number; outer: number; color: string; tilt: number };
   moons?: { dist: number; size: number; speed: number }[];
-  tagline: string;
-  facts: { label: string; value: string }[];
-  blurb: string;
+  tagline: Text;
+  facts: { label: Text; value: Text }[];
+  blurb: Text;
 }
 
 export const SUN = {
-  name: 'The Sun',
+  name: { en: 'The Sun', uz: 'Quyosh' },
   radius: 22,
   facts: [
-    { label: 'Type', value: 'G-type main-sequence star' },
-    { label: 'Diameter', value: '1,392,700 km' },
-    { label: 'Surface', value: 'about 5,500 °C' },
-    { label: 'Core', value: 'about 15 million °C' },
-    { label: 'Share of system mass', value: '99.86%' },
+    { label: { en: 'Type', uz: 'Turi' }, value: { en: 'G-type main-sequence star', uz: 'G sinfidagi bosh ketma-ketlik yulduzi' } },
+    { label: { en: 'Diameter', uz: 'Diametri' }, value: '1,392,700 km' },
+    { label: { en: 'Surface', uz: 'Sirti' }, value: { en: 'about 5,500 °C', uz: 'taxminan 5 500 °C' } },
+    { label: { en: 'Core', uz: 'Yadrosi' }, value: { en: 'about 15 million °C', uz: 'taxminan 15 million °C' } },
+    { label: { en: 'Share of system mass', uz: 'Tizim massasidagi ulushi' }, value: { en: '99.86%', uz: '99,86%' } },
   ],
   blurb:
-    'Everything else in the solar system — every planet, moon, asteroid and comet — is built from the fraction of one percent of matter the Sun did not take.',
+    { en: 'Everything else in the solar system — every planet, moon, asteroid and comet — is built from the fraction of one percent of matter the Sun did not take.', uz: 'Quyosh tizimidagi qolgan hamma narsa — har bir sayyora, yoʻldosh, asteroid va kometa — Quyosh olmay qoldirgan bir foizning ulushidan qurilgan.' },
 };
 
 export const PLANETS: PlanetDef[] = [
   {
     id: 'mercury',
-    name: 'Mercury',
+    name: { en: 'Mercury', uz: 'Merkuriy' },
     index: 'I',
     radius: 2.98,
     orbit: 32.2,
@@ -68,21 +69,21 @@ export const PLANETS: PlanetDef[] = [
     atmosphere: '',
     atmosphereStrength: 0,
     style: 'cratered',
-    tagline: 'Scorched, frozen, and barely holding an atmosphere at all.',
+    tagline: { en: 'Scorched, frozen, and barely holding an atmosphere at all.', uz: 'Kuygan, muzlagan va deyarli atmosferasiz.' },
     facts: [
-      { label: 'Diameter', value: '4,879 km' },
-      { label: 'Distance from Sun', value: '0.39 AU' },
-      { label: 'Day', value: '58.6 Earth days' },
-      { label: 'Year', value: '88 Earth days' },
-      { label: 'Moons', value: 'None' },
-      { label: 'Surface', value: '−173 °C to 427 °C' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '4,879 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '0.39 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '58.6 Earth days', uz: '58,6 Yer sutkasi' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '88 Earth days', uz: '88 Yer sutkasi' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'None', uz: 'Yoʻq' } },
+      { label: { en: 'Surface', uz: 'Sirti' }, value: { en: '−173 °C to 427 °C', uz: '−173 °C dan 427 °C gacha' } },
     ],
     blurb:
-      'The smallest planet and the closest to the Sun. With almost no atmosphere to move heat around, the difference between its day and night sides is the most extreme of any planet.',
+      { en: 'The smallest planet and the closest to the Sun. With almost no atmosphere to move heat around, the difference between its day and night sides is the most extreme of any planet.', uz: 'Eng kichik va Quyoshga eng yaqin sayyora. Issiqlikni tarqatadigan atmosfera deyarli boʻlmagani uchun uning kunduzgi va tungi tomonlari orasidagi farq barcha sayyoralar ichida eng keskin.' },
   },
   {
     id: 'venus',
-    name: 'Venus',
+    name: { en: 'Venus', uz: 'Venera' },
     index: 'II',
     radius: 6.12,
     orbit: 46.2,
@@ -94,21 +95,21 @@ export const PLANETS: PlanetDef[] = [
     atmosphere: '#ffd9a0',
     atmosphereStrength: 0.7,
     style: 'clouded',
-    tagline: 'The hottest surface in the solar system, and it is not the closest planet.',
+    tagline: { en: 'The hottest surface in the solar system, and it is not the closest planet.', uz: 'Quyosh tizimidagi eng issiq sirt — va u Quyoshga eng yaqin sayyora emas.' },
     facts: [
-      { label: 'Diameter', value: '12,104 km' },
-      { label: 'Distance from Sun', value: '0.72 AU' },
-      { label: 'Day', value: '243 Earth days, retrograde' },
-      { label: 'Year', value: '225 Earth days' },
-      { label: 'Moons', value: 'None' },
-      { label: 'Surface', value: 'about 464 °C' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '12,104 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '0.72 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '243 Earth days, retrograde', uz: '243 Yer sutkasi, teskari yoʻnalishda' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '225 Earth days', uz: '225 Yer sutkasi' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'None', uz: 'Yoʻq' } },
+      { label: { en: 'Surface', uz: 'Sirti' }, value: { en: 'about 464 °C', uz: 'taxminan 464 °C' } },
     ],
     blurb:
-      'A runaway greenhouse effect under a carbon dioxide atmosphere keeps Venus hotter than Mercury. It also turns on its axis backwards, and so slowly that its day is longer than its year.',
+      { en: 'A runaway greenhouse effect under a carbon dioxide atmosphere keeps Venus hotter than Mercury. It also turns on its axis backwards, and so slowly that its day is longer than its year.', uz: 'Karbonat angidrid atmosferasi ostidagi nazoratsiz issiqxona effekti Venerani Merkuriydan ham issiqroq saqlaydi. U oʻz oʻqi atrofida teskari va shu qadar sekin aylanadiki, sutkasi yilidan uzun.' },
   },
   {
     id: 'earth',
-    name: 'Earth',
+    name: { en: 'Earth', uz: 'Yer' },
     index: 'III',
     radius: 6.48,
     orbit: 61.6,
@@ -121,17 +122,17 @@ export const PLANETS: PlanetDef[] = [
     atmosphereStrength: 1,
     style: 'terrestrial',
     moons: [{ dist: 26, size: 0.95, speed: 0.55 }],
-    tagline: 'The only place in the observed universe known to carry life.',
+    tagline: { en: 'The only place in the observed universe known to carry life.', uz: 'Kuzatilgan olamda hayot borligi maʼlum boʻlgan yagona joy.' },
     facts: [
-      { label: 'Diameter', value: '12,742 km' },
-      { label: 'Distance from Sun', value: '1 AU — 149.6 million km' },
-      { label: 'Day', value: '23 h 56 m' },
-      { label: 'Year', value: '365.25 days' },
-      { label: 'Moons', value: 'One' },
-      { label: 'Surface', value: 'average about 15 °C' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '12,742 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: { en: '1 AU — 149.6 million km', uz: '1 a.b. — 149,6 million km' } },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '23 h 56 m', uz: '23 soat 56 daqiqa' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '365.25 days', uz: '365,25 sutka' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'One', uz: 'Bitta' } },
+      { label: { en: 'Surface', uz: 'Sirti' }, value: { en: 'average about 15 °C', uz: 'oʻrtacha 15 °C atrofida' } },
     ],
     blurb:
-      'Liquid water, a magnetic field and a stable atmosphere — a narrow set of conditions that has held for billions of years.',
+      { en: 'Liquid water, a magnetic field and a stable atmosphere — a narrow set of conditions that has held for billions of years.', uz: 'Suyuq suv, magnit maydon va barqaror atmosfera — milliardlab yillar davomida saqlanib kelgan tor sharoitlar toʻplami.' },
   },
   {
     id: 'mars',
@@ -151,24 +152,24 @@ export const PLANETS: PlanetDef[] = [
       { dist: 6.3, size: 0.61, speed: 1.4 },
       { dist: 8.82, size: 0.49, speed: 0.9 },
     ],
-    tagline: 'Home to the tallest volcano and the deepest canyon yet found.',
+    tagline: { en: 'Home to the tallest volcano and the deepest canyon yet found.', uz: 'Hozirgacha topilgan eng baland vulqon va eng chuqur kanyon vatani.' },
     facts: [
-      { label: 'Diameter', value: '6,779 km' },
-      { label: 'Distance from Sun', value: '1.52 AU' },
-      { label: 'Day', value: '24 h 37 m' },
-      { label: 'Year', value: '687 Earth days' },
-      { label: 'Moons', value: 'Two — Phobos and Deimos' },
-      { label: 'Surface', value: 'average about −63 °C' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '6,779 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '1.52 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '24 h 37 m', uz: '24 soat 37 daqiqa' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '687 Earth days', uz: '687 Yer sutkasi' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'Two — Phobos and Deimos', uz: 'Ikkita — Fobos va Deymos' } },
+      { label: { en: 'Surface', uz: 'Sirti' }, value: { en: 'average about −63 °C', uz: 'oʻrtacha −63 °C atrofida' } },
     ],
     blurb:
-      'Olympus Mons rises roughly 22 km above the surrounding plain. Valles Marineris runs for over 4,000 km. Water once flowed here; the evidence is written into the terrain.',
+      { en: 'Olympus Mons rises roughly 22 km above the surrounding plain. Valles Marineris runs for over 4,000 km. Water once flowed here; the evidence is written into the terrain.', uz: 'Olimp togʻi atrofdagi tekislikdan qariyb 22 km koʻtarilgan. Mariner vodiysi 4 000 km dan ortiq choʻzilgan. Bir vaqtlar bu yerda suv oqqan; dalili relyefga bitilgan.' },
   },
 ];
 
 PLANETS.push(
   {
     id: 'jupiter',
-    name: 'Jupiter',
+    name: { en: 'Jupiter', uz: 'Yupiter' },
     index: 'V',
     radius: 19.25,
     orbit: 117.6,
@@ -186,17 +187,17 @@ PLANETS.push(
       { dist: 31.5, size: 1.49, speed: 0.6 },
       { dist: 37.8, size: 1.31, speed: 0.45 },
     ],
-    tagline: 'Twice the mass of every other planet combined.',
+    tagline: { en: 'Twice the mass of every other planet combined.', uz: 'Qolgan barcha sayyoralar yigʻindisidan ikki barobar ogʻir.' },
     facts: [
-      { label: 'Diameter', value: '139,820 km' },
-      { label: 'Distance from Sun', value: '5.20 AU' },
-      { label: 'Day', value: '9 h 56 m — the fastest in the system' },
-      { label: 'Year', value: '11.9 Earth years' },
-      { label: 'Moons', value: '95 confirmed, and still counting' },
-      { label: 'Great Red Spot', value: 'A storm observed for well over a century' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '139,820 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '5.20 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '9 h 56 m — the fastest in the system', uz: '9 soat 56 daqiqa — tizimdagi eng tezi' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '11.9 Earth years', uz: '11,9 Yer yili' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: '95 confirmed, and still counting', uz: '95 tasi tasdiqlangan, hisob davom etmoqda' } },
+      { label: { en: 'Great Red Spot', uz: 'Katta Qizil Dogʻ' }, value: { en: 'A storm observed for well over a century', uz: 'Bir asrdan ortiq kuzatilayotgan boʻron' } },
     ],
     blurb:
-      'A gas giant with no solid surface to land on. Its gravity shapes the asteroid belt and has deflected or captured objects that might otherwise have reached the inner planets.',
+      { en: 'A gas giant with no solid surface to land on. Its gravity shapes the asteroid belt and has deflected or captured objects that might otherwise have reached the inner planets.', uz: 'Qoʻnish uchun qattiq sirti boʻlmagan gaz giganti. Uning tortishishi asteroidlar kamarini shakllantiradi hamda ichki sayyoralarga yetib borishi mumkin boʻlgan jismlarni ogʻdirgan yoki oʻziga tortib olgan.' },
   },
   {
     id: 'saturn',
@@ -217,21 +218,21 @@ PLANETS.push(
       { dist: 32.76, size: 1.4, speed: 0.7 },
       { dist: 39.06, size: 0.88, speed: 0.5 },
     ],
-    tagline: 'Rings a few tens of metres thick, spanning hundreds of thousands of kilometres.',
+    tagline: { en: 'Rings a few tens of metres thick, spanning hundreds of thousands of kilometres.', uz: 'Qalinligi bir necha oʻn metr, kengligi yuz minglab kilometr boʻlgan halqalar.' },
     facts: [
-      { label: 'Diameter', value: '116,460 km' },
-      { label: 'Distance from Sun', value: '9.58 AU' },
-      { label: 'Day', value: '10 h 42 m' },
-      { label: 'Year', value: '29.4 Earth years' },
-      { label: 'Moons', value: '146 confirmed' },
-      { label: 'Density', value: 'Less than water' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '116,460 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '9.58 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '10 h 42 m', uz: '10 soat 42 daqiqa' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '29.4 Earth years', uz: '29,4 Yer yili' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: '146 confirmed', uz: '146 tasi tasdiqlangan' } },
+      { label: { en: 'Density', uz: 'Zichligi' }, value: { en: 'Less than water', uz: 'Suvnikidan kam' } },
     ],
     blurb:
-      'The rings are made almost entirely of water ice, in pieces from dust grains to house-sized blocks. They are vast across and astonishingly thin from edge to edge.',
+      { en: 'The rings are made almost entirely of water ice, in pieces from dust grains to house-sized blocks. They are vast across and astonishingly thin from edge to edge.', uz: 'Halqalar deyarli butunlay suv muzidan iborat — chang zarrasidan uy kattaligidagi boʻlaklargacha. Ular koʻndalangiga ulkan, qalinligi esa hayratlanarli darajada yupqa.' },
   },
   {
     id: 'uranus',
-    name: 'Uranus',
+    name: { en: 'Uranus', uz: 'Uran' },
     index: 'VII',
     radius: 9.8,
     orbit: 180.6,
@@ -244,21 +245,21 @@ PLANETS.push(
     atmosphereStrength: 0.5,
     style: 'ice',
     ring: { inner: 13.12, outer: 18.38, color: '#8fb9c4', tilt: 97.8 },
-    tagline: 'Tipped over on its side, most likely by an ancient collision.',
+    tagline: { en: 'Tipped over on its side, most likely by an ancient collision.', uz: 'Katta ehtimol bilan qadimgi toʻqnashuvdan yonboshiga agʻdarilgan.' },
     facts: [
-      { label: 'Diameter', value: '50,724 km' },
-      { label: 'Distance from Sun', value: '19.2 AU' },
-      { label: 'Day', value: '17 h 14 m, retrograde' },
-      { label: 'Year', value: '84 Earth years' },
-      { label: 'Axial tilt', value: '97.8 degrees' },
-      { label: 'Moons', value: 'At least 27' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '50,724 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '19.2 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '17 h 14 m, retrograde', uz: '17 soat 14 daqiqa, teskari yoʻnalishda' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '84 Earth years', uz: '84 Yer yili' } },
+      { label: { en: 'Axial tilt', uz: 'Oʻq qiyaligi' }, value: { en: '97.8 degrees', uz: '97,8 daraja' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'At least 27', uz: 'Kamida 27 ta' } },
     ],
     blurb:
-      'An ice giant that effectively rolls along its orbit. Each pole spends about 42 years in continuous sunlight, then 42 years in darkness.',
+      { en: 'An ice giant that effectively rolls along its orbit. Each pole spends about 42 years in continuous sunlight, then 42 years in darkness.', uz: 'Orbitasi boʻylab deyarli dumalab boradigan muz giganti. Har bir qutbi taxminan 42 yil uzluksiz quyosh nurida, keyin 42 yil zulmatda boʻladi.' },
   },
   {
     id: 'neptune',
-    name: 'Neptune',
+    name: { en: 'Neptune', uz: 'Neptun' },
     index: 'VIII',
     radius: 9.45,
     orbit: 208.6,
@@ -271,17 +272,17 @@ PLANETS.push(
     atmosphereStrength: 0.6,
     style: 'ice',
     moons: [{ dist: 11.97, size: 1.22, speed: -0.6 }],
-    tagline: 'The windiest place we know of, and the last of the planets.',
+    tagline: { en: 'The windiest place we know of, and the last of the planets.', uz: 'Biz biladigan eng shamolli joy va sayyoralarning oxirgisi.' },
     facts: [
-      { label: 'Diameter', value: '49,244 km' },
-      { label: 'Distance from Sun', value: '30.1 AU' },
-      { label: 'Day', value: '16 h 6 m' },
-      { label: 'Year', value: '164.8 Earth years' },
-      { label: 'Winds', value: 'Over 2,000 km/h' },
-      { label: 'Moons', value: 'At least 14' },
+      { label: { en: 'Diameter', uz: 'Diametri' }, value: '49,244 km' },
+      { label: { en: 'Distance from Sun', uz: 'Quyoshdan masofa' }, value: '30.1 AU' },
+      { label: { en: 'Day', uz: 'Sutkasi' }, value: { en: '16 h 6 m', uz: '16 soat 6 daqiqa' } },
+      { label: { en: 'Year', uz: 'Yili' }, value: { en: '164.8 Earth years', uz: '164,8 Yer yili' } },
+      { label: { en: 'Winds', uz: 'Shamollari' }, value: { en: 'Over 2,000 km/h', uz: 'Soatiga 2 000 km dan ortiq' } },
+      { label: { en: 'Moons', uz: 'Yoʻldoshlari' }, value: { en: 'At least 14', uz: 'Kamida 14 ta' } },
     ],
     blurb:
-      'Found by mathematics before it was found by telescope: irregularities in the orbit of Uranus pointed to where it had to be. Sunlight here is about a thousandth of its strength at Earth.',
+      { en: 'Found by mathematics before it was found by telescope: irregularities in the orbit of Uranus pointed to where it had to be. Sunlight here is about a thousandth of its strength at Earth.', uz: 'Teleskopdan oldin matematika yordamida topilgan: Uran orbitasidagi ogʻishlar uning qayerda boʻlishi kerakligini koʻrsatdi. Bu yerdagi quyosh nuri Yerdagisidan taxminan ming baravar zaif.' },
   },
 );
 

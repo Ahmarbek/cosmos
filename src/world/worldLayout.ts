@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CHARACTERS } from '../data/characters';
+import { tr } from '../i18n/lang';
 
 /** Geometry of the hall, shared by the environment, the player and the HUD. */
 export const ARENA_RADIUS = 46;
@@ -10,7 +11,7 @@ export const INTERACT_RANGE = 5.2;
 export interface Station {
   id: string;
   name: string;
-  discipline: string;
+  discipline: import('../i18n').L;
   angle: number;
   position: THREE.Vector3;
   /**
@@ -29,7 +30,9 @@ export const STATIONS: Station[] = CHARACTERS.map((c, i) => {
   return {
     id: c.id,
     name: c.name,
-    discipline: c.description.split('—')[0].trim(),
+    // Positions never change with language; the plate copy is a pair, and the
+    // canvas that bakes it re-bakes when the language does.
+    discipline: { en: tr(c.description, 'en').split('—')[0].trim(), uz: tr(c.description, 'uz').split('—')[0].trim() },
     angle,
     position: new THREE.Vector3(Math.cos(angle) * PLINTH_RADIUS, 0, Math.sin(angle) * PLINTH_RADIUS),
     facing: -angle - Math.PI / 2,

@@ -1,6 +1,7 @@
 import { CHARACTER_BY_ID, buildSystemPrompt } from '../src/data/characters';
 import { mockReply } from '../src/lib/ai/mock';
 import type { ChatRequest, ChatResponse } from '../src/lib/ai/types';
+import { tr } from '../src/i18n/lang';
 
 /**
  * /api/chat — one handler, two backends.
@@ -26,6 +27,7 @@ function sanitise(body: unknown): ChatRequest | null {
   return {
     character: b.character.slice(0, 64),
     message: b.message.slice(0, 1200),
+    lang: b.lang === 'uz' ? 'uz' : 'en',
     history: history
       .filter(
         (m): m is { role: 'user' | 'assistant'; content: string } =>
@@ -52,7 +54,7 @@ async function callModel(req: ChatRequest, apiKey: string): Promise<ChatResponse
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 320,
-      system: buildSystemPrompt(c),
+      system: buildSystemPrompt(c, req.lang),
       messages: [...req.history, { role: 'user', content: req.message }],
     }),
   });
@@ -69,7 +71,7 @@ async function callModel(req: ChatRequest, apiKey: string): Promise<ChatResponse
 
   return {
     response: text,
-    character: { id: c.id, name: c.name, label: c.label },
+    character: { id: c.id, name: c.name, label: tr(c.label, req.lang) },
     source: 'model',
     model: MODEL,
   };

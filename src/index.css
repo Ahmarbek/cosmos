@@ -225,12 +225,16 @@
     pointer-events: none;
     background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%);
   }
+  /* The overhang only has to cover the 2% the keyframes travel. At -50% the
+     layer is four times the area of the viewport, and the compositor pays for
+     all of it on every frame it is blended over the canvas. */
   .grain::before {
     content: '';
     position: absolute;
-    inset: -50%;
+    inset: -8%;
     pointer-events: none;
     opacity: 0.035;
+    will-change: transform;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
     animation: grainshift 0.9s steps(3) infinite;
   }

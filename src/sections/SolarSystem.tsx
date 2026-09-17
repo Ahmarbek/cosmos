@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Cue from '../components/ui/Cue';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import { PLANETS, PLANET_BY_ID, SUN } from '../data/planets';
 import { useStore } from '../state/useStore';
 import { blip } from '../lib/audio';
@@ -12,6 +14,7 @@ import { blip } from '../lib/audio';
  * because the compression is severe and deliberate.
  */
 export default function SolarSystem() {
+  const t = useT();
   const interactive = useStore((s) => s.interactive);
   const setInteractive = useStore((s) => s.setInteractive);
   const selected = useStore((s) => s.selectedPlanet);
@@ -24,15 +27,15 @@ export default function SolarSystem() {
       {!exploring && (
         <>
           <Cue a={0.425} b={0.442} c={0.462} d={0.478} className="stack grid place-items-center px-[8vw]">
-            <h2 className="t-display text-center glow-soft scrim">Our home.</h2>
+            <h2 className="t-display text-center glow-soft scrim">{t(UI.ourHome)}</h2>
           </Cue>
 
           <Cue a={0.474} b={0.49} c={0.515} d={0.535} className="stack grid place-items-center px-[8vw]">
             <div className="text-center scrim">
-              <p className="t-eyebrow mb-6">Chapter 03</p>
-              <h2 className="t-display">The Solar System</h2>
+              <p className="t-eyebrow mb-6">{t(UI.chapter03)}</p>
+              <h2 className="t-display">{t(UI.chapterSolar)}</h2>
               <p className="t-lead mt-8 max-w-[40ch] mx-auto">
-                One ordinary star, eight planets, and everything we have ever touched.
+                {t(UI.solarSystemLead)}
               </p>
             </div>
           </Cue>
@@ -40,15 +43,15 @@ export default function SolarSystem() {
           <Cue a={0.53} b={0.545} c={0.585} d={0.605} className="stack flex items-center px-[8vw]">
             <div className="max-w-[36ch] panel-pad">
               <div className="flex items-center gap-4 mb-5">
-                <span className="t-eyebrow">The Sun</span>
+                <span className="t-eyebrow">{t(SUN.name)}</span>
                 <span className="h-px flex-1 bg-[rgba(234,234,242,0.16)] min-w-[40px]" />
               </div>
-              <p className="t-body mb-6">{SUN.blurb}</p>
+              <p className="t-body mb-6">{t(SUN.blurb)}</p>
               <dl className="grid grid-cols-2 gap-x-8 gap-y-3">
                 {SUN.facts.slice(0, 4).map((f) => (
-                  <div key={f.label}>
-                    <dt className="t-eyebrow mb-1">{f.label}</dt>
-                    <dd className="text-sm text-bone/85 font-light">{f.value}</dd>
+                  <div key={t(f.label)}>
+                    <dt className="t-eyebrow mb-1">{t(f.label)}</dt>
+                    <dd className="text-sm text-bone/85 font-light">{t(f.value)}</dd>
                   </div>
                 ))}
               </dl>
@@ -71,7 +74,7 @@ export default function SolarSystem() {
               }}
               data-cursor="hover"
             >
-              <span>Explore the system</span>
+              <span>{t(UI.exploreSystem)}</span>
               <span aria-hidden>✦</span>
             </button>
           </Cue>
@@ -86,7 +89,7 @@ export default function SolarSystem() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute left-[4vw] top-1/2 -translate-y-1/2 pointer-events-auto"
-            aria-label="Planets"
+            aria-label={t(UI.planetsAria)}
           >
             <ol className="flex flex-col gap-3">
               {PLANETS.map((p) => {
@@ -110,7 +113,7 @@ export default function SolarSystem() {
                         className="text-[0.62rem] tracking-[0.22em] uppercase transition-colors duration-500"
                         style={{ color: on ? 'var(--bone)' : 'var(--ash)' }}
                       >
-                        {p.name}
+                        {t(p.name)}
                       </span>
                     </button>
                   </li>
@@ -130,33 +133,31 @@ export default function SolarSystem() {
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute right-[4vw] top-1/2 -translate-y-1/2 w-[min(34ch,80vw)] max-h-[74vh] overflow-y-auto overscroll-contain pointer-events-auto hair-l pl-7 panel-pad"
               >
-                <p className="t-eyebrow mb-4">Planet {planet.index}</p>
-                <h3 className="t-display-sm mb-3 leading-none">{planet.name}</h3>
-                <p className="t-lead mb-5">{planet.tagline}</p>
+                <p className="t-eyebrow mb-4">{t(UI.planetWord)} {planet.index}</p>
+                <h3 className="t-display-sm mb-3 leading-none">{t(planet.name)}</h3>
+                <p className="t-lead mb-5">{t(planet.tagline)}</p>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 mb-6">
                   {planet.facts.map((f) => (
-                    <div key={f.label}>
-                      <dt className="t-eyebrow mb-1">{f.label}</dt>
-                      <dd className="text-[0.82rem] text-bone/85 font-light leading-snug">{f.value}</dd>
+                    <div key={t(f.label)}>
+                      <dt className="t-eyebrow mb-1">{t(f.label)}</dt>
+                      <dd className="text-[0.82rem] text-bone/85 font-light leading-snug">{t(f.value)}</dd>
                     </div>
                   ))}
                 </dl>
-                <p className="t-body">{planet.blurb}</p>
+                <p className="t-body">{t(planet.blurb)}</p>
               </motion.aside>
             )}
           </AnimatePresence>
 
           <div className="absolute top-[11vh] left-0 w-full grid place-items-center px-[6vw]">
             <p className="t-eyebrow text-center">
-              Drag to orbit · Scroll to zoom · Select a planet to focus
+              {t(UI.dragOrbitZoomSelect)}
             </p>
           </div>
 
           <div className="absolute bottom-[5.5vh] left-0 w-full px-[6vw] text-center">
             <p className="text-[0.58rem] tracking-[0.2em] uppercase text-smoke/70 max-w-[74ch] mx-auto leading-relaxed">
-              Artistic visualisation. Planet sizes and orbital distances are compressed for
-              legibility; ordering, relative periods, axial tilts and rotation directions follow
-              the real bodies.
+              {t(UI.solarDisclaimer)}
             </p>
           </div>
 
@@ -171,7 +172,7 @@ export default function SolarSystem() {
               data-cursor="hover"
             >
               <span aria-hidden>←</span>
-              <span>Return to the journey</span>
+              <span>{t(UI.returnToJourney)}</span>
             </button>
           </div>
         </div>

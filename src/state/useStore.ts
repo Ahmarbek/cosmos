@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { detectLang, persistLang, type Lang } from '../i18n/lang';
+import { UI } from '../i18n/ui';
 
 /** The six chapters of the journey, in order. */
 export type ChapterId = 'universe' | 'blackholes' | 'solar' | 'earth' | 'icons' | 'world';
@@ -6,18 +8,18 @@ export type ChapterId = 'universe' | 'blackholes' | 'solar' | 'earth' | 'icons' 
 export interface Chapter {
   id: ChapterId;
   index: string;
-  label: string;
+  label: import('../i18n').Text;
   start: number;
   end: number;
 }
 
 export const CHAPTERS: Chapter[] = [
-  { id: 'universe', index: '01', label: 'Universe', start: 0.0, end: 0.14 },
-  { id: 'blackholes', index: '02', label: 'Black Holes', start: 0.14, end: 0.42 },
-  { id: 'solar', index: '03', label: 'Solar System', start: 0.42, end: 0.62 },
-  { id: 'earth', index: '04', label: 'Earth', start: 0.62, end: 0.76 },
-  { id: 'icons', index: '05', label: 'Icons', start: 0.76, end: 0.94 },
-  { id: 'world', index: '06', label: 'Enter World', start: 0.94, end: 1.0 },
+  { id: 'universe', index: '01', label: UI.chapterUniverse, start: 0.0, end: 0.14 },
+  { id: 'blackholes', index: '02', label: UI.chapterBlackHoles, start: 0.14, end: 0.42 },
+  { id: 'solar', index: '03', label: UI.chapterSolar, start: 0.42, end: 0.62 },
+  { id: 'earth', index: '04', label: UI.chapterEarth, start: 0.62, end: 0.76 },
+  { id: 'icons', index: '05', label: UI.chapterIcons, start: 0.76, end: 0.94 },
+  { id: 'world', index: '06', label: UI.chapterWorld, start: 0.94, end: 1.0 },
 ];
 
 export function chapterAt(p: number): Chapter {
@@ -59,6 +61,8 @@ interface CosmosState {
   setChatWith: (id: string | null) => void;
   pointerLocked: boolean;
   setPointerLocked: (v: boolean) => void;
+  lang: Lang;
+  setLang: (l: Lang) => void;
 }
 
 export const useStore = create<CosmosState>((set) => ({
@@ -91,6 +95,14 @@ export const useStore = create<CosmosState>((set) => ({
   setChatWith: (chatWith) => set({ chatWith }),
   pointerLocked: false,
   setPointerLocked: (pointerLocked) => set({ pointerLocked }),
+  // Nothing in the scene depends on the language, so switching is a state
+  // change and not a reload: the journey keeps its position and the canvas is
+  // never rebuilt.
+  lang: detectLang(),
+  setLang: (lang) => {
+    persistLang(lang);
+    set({ lang });
+  },
 }));
 
 export const readStore = () => useStore.getState();

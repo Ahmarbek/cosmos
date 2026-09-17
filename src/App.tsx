@@ -11,10 +11,13 @@ import Humanity from './sections/Humanity';
 import IconProfile from './sections/IconProfile';
 import EnterWorld from './sections/EnterWorld';
 import JourneyCanvas from './three/JourneyCanvas';
+import CanvasBoundary from './three/CanvasBoundary';
 import Fallback2D from './three/Fallback2D';
 import { useCapabilities } from './hooks/useCapabilities';
 import { useScrollJourney } from './hooks/useScrollJourney';
 import { useStore } from './state/useStore';
+import { useLang, useT } from './i18n';
+import { UI } from './i18n/ui';
 
 const World = lazy(() => import('./world/World'));
 
@@ -23,6 +26,19 @@ const TRACK_VH = 1400;
 
 export default function App() {
   useCapabilities();
+  const t = useT();
+  const lang = useLang();
+
+  // The tab title, the meta description and the lang attribute are outside the
+  // React tree, so they are kept in step by hand rather than left in whichever
+  // language the document was served in.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = t(UI.title);
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute('content', t(UI.description));
+  }, [lang, t]);
 
   const stage = useStore((s) => s.stage);
   const setStage = useStore((s) => s.setStage);
@@ -73,7 +89,13 @@ export default function App() {
       {/* the fixed stage everything is drawn on */}
       <div className="fixed inset-0 overflow-hidden">
         {stage !== 'world' &&
-          (webgl ? <JourneyCanvas quality={quality} /> : <Fallback2D />)}
+          (webgl ? (
+            <CanvasBoundary fallback={<Fallback2D />}>
+              <JourneyCanvas quality={quality} />
+            </CanvasBoundary>
+          ) : (
+            <Fallback2D />
+          ))}
 
         {/* atmosphere over the render, never under it */}
         <div className="stack pointer-events-none vignette grain" />
@@ -106,7 +128,7 @@ export default function App() {
             <Suspense
               fallback={
                 <div className="stack grid place-items-center bg-void">
-                  <p className="t-eyebrow animate-pulse">Building the hall…</p>
+                  <p className="t-eyebrow animate-pulse">{t(UI.buildingTheHall)}</p>
                 </div>
               }
             >

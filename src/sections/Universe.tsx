@@ -1,4 +1,6 @@
 import Cue from '../components/ui/Cue';
+import { useT } from '../i18n';
+import { UI } from '../i18n/ui';
 import { useStore } from '../state/useStore';
 import { band } from '../utils/math';
 
@@ -9,6 +11,7 @@ import { band } from '../utils/math';
  * wordmark. The restraint here is what makes the black hole land later.
  */
 export default function Universe() {
+  const t = useT();
   const p = useStore((s) => s.progress);
   const dot = band(p, -0.05, -0.04, 0.004, 0.026);
 
@@ -30,12 +33,12 @@ export default function Universe() {
       </div>
 
       <Cue a={0.012} b={0.03} c={0.05} d={0.064} className="stack grid place-items-center px-[8vw]">
-        <h2 className="t-display text-center glow-soft scrim">We are here.</h2>
+        <h2 className="t-display text-center glow-soft scrim">{t(UI.weAreHere)}</h2>
       </Cue>
 
       <Cue a={0.058} b={0.074} c={0.088} d={0.1} className="stack grid place-items-center px-[8vw]">
         <h2 className="t-display-sm text-center max-w-[16ch] leading-[1.05] text-bone/90 scrim">
-          In an unimaginably large universe.
+          {t(UI.inALargeUniverse)}
         </h2>
       </Cue>
 
@@ -49,9 +52,9 @@ export default function Universe() {
       >
         <div className="text-center scrim">
           <h1 className="t-display glow-soft" style={{ letterSpacing: '0.1em', paddingLeft: '0.1em' }}>
-            COSMOS
+            {t(UI.wordmark)}
           </h1>
-          <p className="t-eyebrow mt-8">Two trillion galaxies · One address</p>
+          <p className="t-eyebrow mt-8">{t(UI.twoTrillion)}</p>
         </div>
       </Cue>
 
@@ -65,7 +68,7 @@ export default function Universe() {
         rise={0}
       >
         <div className="flex flex-col items-center gap-3">
-          <span className="t-eyebrow">Scroll to travel</span>
+          <span className="t-eyebrow">{t(UI.scrollToTravel)}</span>
           <span className="block w-px h-12 bg-gradient-to-b from-transparent via-bone/60 to-transparent animate-pulse" />
         </div>
       </Cue>
