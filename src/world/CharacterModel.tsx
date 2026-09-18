@@ -100,6 +100,9 @@ export default function CharacterModel({ id, height, animate = true, children }:
   const [model, setModel] = useState<THREE.Object3D | null>(null);
   const holder = useRef<THREE.Group>(null);
   const mixer = useRef<THREE.AnimationMixer | null>(null);
+  // A figure with no clip of its own still has to look alive; see breathe().
+  const breath = useRef<number>(Math.random() * Math.PI * 2);
+  const rigged = useRef(false);
   const box = useMemo(() => new THREE.Box3(), []);
   const size = useMemo(() => new THREE.Vector3(), []);
   const centre = useMemo(() => new THREE.Vector3(), []);
@@ -190,6 +193,7 @@ export default function CharacterModel({ id, height, animate = true, children }:
       // copies only the scene — which is every clone made here — arrives
       // frozen in its bind pose unless a mixer is attached to it by hand.
       const clip = animate ? idleClip(asset.clips) : null;
+      rigged.current = clip !== null;
       if (clip) {
         const m = new THREE.AnimationMixer(obj);
         m.clipAction(inPlace(clip, root)).play();
@@ -211,8 +215,41 @@ export default function CharacterModel({ id, height, animate = true, children }:
     // The float and the facing are the parent group's, and a supplied model
     // inherits them unchanged. Its own clip is driven from here.
     mixer.current?.update(dt);
+
+    // Breathing, for the models that arrive without a skeleton.
+    //
+    // An image-to-3D mesh is geometry and nothing else: no bones, so no clip,
+    // so the figure stands in a dead stillness that reads as a shop dummy
+    // rather than a person. There is no rig to drive, but a body at rest is
+    // not motionless — the chest rises, and weight shifts slowly from one
+    // foot to the other. Both of those are whole-body transforms, so both can
+    // be faked on the holder without any skinning at all: a shallow vertical
+    // scale about the feet for the breath, a long sway on top of it. It costs
+    // two sin() per figure per frame and no vertex work, which matters here
+    // because ten of these stand in one room.
+    //
+    // This is deliberately not a substitute for a rig. Arms and head stay
+    // still, and up close it reads as what it is. It is what an un-rigged
+    // mesh can honestly do until a real idle clip replaces it.
+    const h = holder.current;
+    if (!h || !animate || rigged.current) return;
+    breath.current += dt;
+    const t = breath.current;
+    // ~14 breaths a minute, and a sway far slower so the two never beat
+    // together into a visible pulse.
+    const rise = Math.sin(t * 1.45);
+    const sway = Math.sin(t * 0.31);
+    h.scale.set(1 - rise * 0.0045, 1 + rise * 0.009, 1 - rise * 0.0045);
+    h.rotation.z = sway * 0.012;
+    h.position.x = sway * 0.011;
   });
 
   if (!model) return <>{children}</>;
-  return <primitive ref={holder} object={model} />;
+  // The model keeps its own normalising transform; the idle is applied to a
+  // wrapper so the two never fight over position and scale.
+  return (
+    <group ref={holder}>
+      <primitive object={model} />
+    </group>
+  );
 }
